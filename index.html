@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Pi Market CZ</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:600,400&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0; padding: 0; min-height: 100vh;
+      font-family: 'Montserrat', Arial, sans-serif;
+      background: linear-gradient(120deg, #fff 0%, #f3e9fc 100%);
+      color: #331044;
+    }
+    .container {
+      max-width: 900px;
+      margin: 36px auto 32px auto;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px 0 #612b7e20, 0 1px 6px 0 #ffd70022;
+      padding: 32px 18px 30px 18px;
+    }
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 32px;
+    }
+    .logo {
+      font-size: 2.1rem; font-weight: 700; letter-spacing: 2px;
+      color: #612b7e;
+      display: flex; align-items: center;
+    }
+    .logo span {
+      margin-left: 8px; color: #FFD700; font-size: 1.5rem;
+    }
+    .btn-pi {
+      background: linear-gradient(100deg,#612b7e 70%,#ffd700 100%);
+      color: #fff; border: none;
+      border-radius: 12px; font-size: 1rem; font-weight: 600;
+      padding: 11px 25px;
+      cursor: pointer; transition: 0.2s;
+      box-shadow: 0 2px 8px 0 #ffd70022;
+      display: flex; align-items: center;
+      gap: 8px;
+    }
+    .btn-pi:hover { filter: brightness(1.09); box-shadow: 0 4px 16px 0 #ffd70030;}
+    .offers-section {
+      margin-bottom: 48px;
+    }
+    .offers-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 18px;
+    }
+    .offers-header h2 { margin: 0; font-size: 1.3rem; color: #612b7e;}
+    .filters {
+      display: flex; gap: 14px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    .filters input, .filters select {
+      padding: 7px 12px; border-radius: 7px; border: 1px solid #d2c1e2;
+      background: #faf7ff;
+      font-size: 1rem;
+    }
+    .offers-list {
+      display: grid; grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+      gap: 18px;
+    }
+    .offer-card {
+      background: #f7f1fb;
+      border-radius: 14px;
+      box-shadow: 0 1px 7px 0 #33104410;
+      padding: 18px 13px 17px 13px;
+      display: flex; flex-direction: column; justify-content: space-between;
+      min-height: 190px;
+      transition: transform 0.12s;
+      position: relative;
+    }
+    .offer-card:hover { transform: translateY(-3px) scale(1.02);}
+    .offer-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 4px; color: #612b7e;}
+    .offer-desc { font-size: 1rem; margin-bottom: 8px;}
+    .offer-cat {
+      display: inline-block; background: #ffd70022;
+      color: #916313; font-size: 0.9rem;
+      border-radius: 8px; padding: 1px 10px; margin-bottom: 6px;
+    }
+    .offer-price { font-size: 1.1rem; font-weight: 600; color: #FFD700;}
+    .offer-actions {
+      margin-top: 14px; display: flex; gap: 10px;
+      align-items: center;
+    }
+    .btn-buy {
+      background: linear-gradient(90deg,#ffd700 60%,#e7cf72 100%);
+      color: #612b7e; font-weight: 700; border: none;
+      padding: 7px 17px; border-radius: 10px; font-size: 1rem;
+      cursor: pointer; transition: 0.18s;
+      box-shadow: 0 2px 8px 0 #ffd70016;
+    }
+    .btn-buy:hover { background: #ffd700; }
+    .add-offer-section {
+      margin-top: 18px; padding: 22px 0 0 0;
+      border-top: 1px solid #ecd9fc;
+    }
+    .add-offer-section h2 {
+      color: #612b7e; margin-top: 0; font-size: 1.15rem;
+    }
+    .add-offer-form {
+      display: flex; flex-wrap: wrap; gap: 18px;
+      align-items: flex-end;
+      margin-top: 10px;
+    }
+    .add-offer-form input, .add-offer-form textarea, .add-offer-form select {
+      padding: 8px 13px; border-radius: 8px; border: 1px solid #d2c1e2;
+      background: #f8f5fa;
+      font-size: 1rem;
+      font-family: inherit;
+      margin-bottom: 5px;
+    }
+    .add-offer-form textarea { min-width: 200px; min-height: 45px; }
+    .btn-add-offer {
+      background: #612b7e; color: #fff; font-weight: 700;
+      padding: 10px 28px; border: none; border-radius: 10px;
+      cursor: pointer; font-size: 1rem;
+      margin-left: 0; transition: 0.18s;
+      box-shadow: 0 2px 10px 0 #612b7e11;
+    }
+    .btn-add-offer:hover { background: #78489b; }
+    .info-box {
+      background: #ffeccb;
+      border-radius: 11px; padding: 13px 16px;
+      margin: 16px 0 24px 0;
+      color: #916313; font-size: 1.03rem;
+    }
+    @media (max-width: 600px) {
+      .container { padding: 10px 3px; }
+      .add-offer-form { flex-direction: column; gap: 8px;}
+    }
+  </style>
+  <!-- Pi SDK -->
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+</head>
+<body>
+<div class="container" id="app">
+  <div id="debug-box" style="margin-bottom:15px; color:#c00; font-weight:bold;"></div>
+  <div class="header">
+    <div class="logo">Pi Market CZ <span>π</span></div>
+    <button class="btn-pi" id="btn-login"><svg width="22" height="22" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="16" fill="#FFD700"/><path d="M10.5 22V10H12.8V20.2H17.4V22H10.5ZM19.4 22V10H21.7V22H19.4Z" fill="#612B7E"/></svg> Přihlásit se přes Pi</button>
+    <span id="user-welcome" style="display:none; color:#612b7e; font-weight:600;">Přihlášeno jako <span id="user-username"></span></span>
+  </div>
+  
+  <div id="not-pi-browser" style="display:none;" class="info-box">
+    Tato aplikace je určena pouze pro <strong>Pi Browser</strong>.<br>
+    Prosím, otevři stránku v aplikaci Pi Browser.
+  </div>
+  
+  <div id="main-content" style="display:block;">
+    <section class="offers-section">
+      <div class="offers-header">
+        <h2>Nabídky</h2>
+        <div class="filters">
+          <select id="filter-cat">
+            <option value="">Všechny kategorie</option>
+          </select>
+          <input type="number" id="filter-min" placeholder="Min. cena (π)">
+          <input type="number" id="filter-max" placeholder="Max. cena (π)">
+        </div>
+      </div>
+      <div class="offers-list" id="offers-list"></div>
+    </section>
+    
+    <section class="add-offer-section">
+      <h2>Přidat nabídku</h2>
+      <form id="add-offer-form" class="add-offer-form">
+        <input type="text" id="offer-title" placeholder="Název produktu/služby" required>
+        <input type="number" id="offer-price" min="0.01" step="0.01" placeholder="Cena v π" required>
+        <input type="text" id="offer-cat" placeholder="Kategorie (např. Služba, Elektronika)" required>
+        <textarea id="offer-desc" placeholder="Popis nabídky" required></textarea>
+        <input type="text" id="offer-img" placeholder="URL obrázku (volitelné)">
+        <button type="submit" class="btn-add-offer">Přidat</button>
+      </form>
+    </section>
+  </div>
+</div>
+<script>
+  // ==== PI BROWSER DETEKCE (VYLEPŠENO) ====
+  function isPiBrowser() {
+    return (window.ReactNativeWebView !== undefined) || /PiBrowser/i.test(navigator.userAgent);
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    if(!isPiBrowser()){
+      document.getElementById('main-content').style.display = 'none';
+      document.getElementById('not-pi-browser').style.display = 'block';
+    }
+  });
+
+  // ==== PI SDK INITIALIZATION ====
+  const appId = '5y0bdn8jdch6fw0a7wz8hyas7mbxd4cm3nyybxbih0kfpndztrhobsefd0iur8rg';
+  if (isPiBrowser() && window.Pi) {
+    window.Pi.init({ version: "2.0", appId: appId, sandbox: true });
+  }
+
+  // ==== PI LOGIN ====
+  window.currentUser = null;
+  document.getElementById("btn-login").addEventListener("click", function(){
+    if(!window.Pi){
+      alert("Pi SDK není načteno.");
+      return;
+    }
+    
+    
+    const debugBox = document.getElementById("debug-box");
+    if(debugBox) debugBox.innerText = "Zahájení přihlášení přes Pi...";
+    
+    if (!window.Pi) {
+      
+    if(debugBox) debugBox.innerText = "Pi SDK není načteno – nejsi v Pi Browseru nebo je špatně načten SDK skript.";
+    
+      alert("Pi SDK není načteno. Zkontroluj, že jsi v Pi Browseru.");
+      return;
+    }
+    window.Pi.authenticate(
+      ['username', 'payments'],
+      function(user){
+      
+    if(debugBox) debugBox.innerText = "Přihlášený uživatel: " + user.username;
+    
+        currentUser = user;
+        document.getElementById("btn-login").style.display = "none";
+        document.getElementById("user-welcome").style.display = "inline";
+        document.getElementById("user-username").textContent = currentUser.username;
+      },
+      function(error){
+      
+    if(debugBox) debugBox.innerText = "Chyba při přihlášení: " + error;
+    
+        alert("Přihlášení selhalo: " + error);
+      }
+    );
+  });
+
+  // ==== NABÍDKY: PRÁCE S LOCALSTORAGE ====
+  function getOffers(){
+    return JSON.parse(localStorage.getItem("offers") || "[]");
+  }
+  function saveOffers(offers){
+    localStorage.setItem("offers", JSON.stringify(offers));
+  }
+  function renderOffers(){
+    let offers = getOffers();
+    // Filtrování
+    const cat = document.getElementById("filter-cat").value.trim();
+    const min = parseFloat(document.getElementById("filter-min").value);
+    const max = parseFloat(document.getElementById("filter-max").value);
+    let filtered = offers.filter(o => {
+      let ok = true;
+      if(cat && o.cat !== cat) ok = false;
+      if(!isNaN(min) && o.price < min) ok = false;
+      if(!isNaN(max) && o.price > max) ok = false;
+      return ok;
+    });
+    // Vykreslení
+    const el = document.getElementById("offers-list");
+    el.innerHTML = "";
+    if(filtered.length === 0) {
+      el.innerHTML = "<div style='color:#612b7e; font-size:1.1rem; opacity:0.6;'>Žádné nabídky nebyly nalezeny.</div>";
+      return;
+    }
+    for(const offer of filtered){
+      let imgHtml = "";
+      if(offer.img) imgHtml = `<img src="${offer.img}" alt="obrázek" style="width:100%;max-height:90px;object-fit:cover;border-radius:8px;margin-bottom:7px;">`;
+      el.innerHTML += `
+        <div class="offer-card">
+          ${imgHtml}
+          <div class="offer-cat">${offer.cat}</div>
+          <div class="offer-title">${offer.title}</div>
+          <div class="offer-desc">${offer.desc}</div>
+          <div class="offer-price">${offer.price} π</div>
+          <div class="offer-actions">
+            <button class="btn-buy" onclick="buyOffer(${offer.id})">Koupit za π</button>
+          </div>
+        </div>
+      `;
+    }
+  }
+  // ==== KATEGORIE ====
+  function renderCats(){
+    const offers = getOffers();
+    const cats = [...new Set(offers.map(o => o.cat).filter(Boolean))];
+    const select = document.getElementById("filter-cat");
+    select.innerHTML = `<option value="">Všechny kategorie</option>`;
+    for(const cat of cats) select.innerHTML += `<option value="${cat}">${cat}</option>`;
+  }
+  // ==== PŘIDÁNÍ NABÍDKY ====
+  document.getElementById("add-offer-form").addEventListener("submit", function(e){
+    e.preventDefault();
+    const title = document.getElementById("offer-title").value.trim();
+    const price = parseFloat(document.getElementById("offer-price").value);
+    const cat = document.getElementById("offer-cat").value.trim();
+    const desc = document.getElementById("offer-desc").value.trim();
+    const img = document.getElementById("offer-img").value.trim();
+    if(!title || isNaN(price) || price <= 0 || !cat || !desc) return;
+    let offers = getOffers();
+    offers.push({
+      id: Date.now(),
+      title, price, cat, desc, img
+    });
+    saveOffers(offers);
+    renderCats();
+    renderOffers();
+    this.reset();
+  });
+  // ==== FILTRY ====
+  document.getElementById("filter-cat").addEventListener("change", renderOffers);
+  document.getElementById("filter-min").addEventListener("input", renderOffers);
+  document.getElementById("filter-max").addEventListener("input", renderOffers);
+  // ==== KOUPĚ ====
+  window.buyOffer = function(id){
+    if(!window.currentUser) {
+      alert("Nejdříve se přihlaš přes Pi Network.");
+      return;
+    }
+    const offers = getOffers();
+    const offer = offers.find(o => o.id === id);
+    console.log('Aktuální uživatel:', window.currentUser);
+    if(!offer) return alert("Nabídka nenalezena.");
+    if(!window.Pi){
+      alert("Pi SDK není načteno.");
+      return;
+    }
+    window.Pi.createPayment(
+      {
+        amount: offer.price,
+        memo: "Nákup na Pi Market CZ: " + offer.title,
+        metadata: { offerId: offer.id }
+      },
+      function(payment){
+        alert("Platba proběhla v pořádku!");
+      },
+      function(error){
+      
+    if(debugBox) debugBox.innerText = "Chyba při přihlášení: " + error;
+    
+        alert("Platba selhala: " + error);
+      }
+    );
+  };
+
+  // ==== PRVNÍ VYKRESLENÍ ====
+  renderCats();
+  renderOffers();
+</script>
+</body>
+</html>
