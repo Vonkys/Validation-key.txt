@@ -1,0 +1,173 @@
+
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Pi Market Debug SDK</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f7f7f7; }
+    #debug-output { background: #ffe; color: #333; padding: 10px; border-radius: 8px; margin-top: 20px; white-space: pre-line; border: 1px solid #ccc; }
+    input, textarea, button { font-size: 1rem; padding: 6px; margin: 5px 0; width: 100%; max-width: 300px; }
+    .offer { background: #fff; border: 1px solid #ccc; padding: 10px; margin: 8px 0; border-radius: 6px; }
+    .buy-btn { background: #ffd700; border: none; padding: 6px 12px; margin-top: 6px; font-weight: bold; border-radius: 6px; cursor: pointer; }
+  </style>
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+</head>
+<body>
+
+<h2>Přidat nabídku</h2>
+<input id="title" placeholder="Název"><br>
+<input id="price" placeholder="Cena"><br>
+<input id="cat" placeholder="Kategorie"><br>
+<textarea id="desc" placeholder="Popis nabídky"></textarea><br>
+<button onclick="addOffer()">Přidat nabídku</button>
+
+<h2>Seznam nabídek</h2>
+<div id="offers-list"></div>
+
+<h2>Ladění</h2>
+<div id="debug-output">Načítám...</div>
+
+<script>
+  const debugOut = document.getElementById("debug-output");
+  const offersList = document.getElementById("offers-list");
+  const appId = "market-cz";
+
+  function log(msg) {
+    debugOut.innerText += "\n" + msg;
+  }
+
+  function isPiBrowser() {
+    return (window.ReactNativeWebView !== undefined) || /PiBrowser/i.test(navigator.userAgent);
+  }
+
+  function getOffers() {
+    try {
+      const raw = localStorage.getItem("offers") || "[]";
+      const parsed = JSON.parse(raw);
+      log("Načteno z localStorage: " + raw);
+      return parsed;
+    } catch(e) {
+      log("Chyba při čtení localStorage: " + e);
+      return [];
+    }
+  }
+
+  function saveOffers(offers) {
+    try {
+      const serialized = JSON.stringify(offers);
+      localStorage.setItem("offers", serialized);
+      log("Uloženo do localStorage: " + serialized);
+    } catch(e) {
+      log("Chyba při ukládání: " + e);
+    }
+  }
+
+  function renderOffers() {
+    const offers = getOffers();
+    offersList.innerHTML = "";
+    if (offers.length === 0) {
+      offersList.innerHTML = "<div>Žádné nabídky</div>";
+    } else {
+      for (let i = 0; i < offers.length; i++) {
+        const o = offers[i];
+        const el = document.createElement("div");
+        el.className = "offer";
+        el.innerHTML = o.title + " – " + o.price + " π (" + o.cat + ")<br>" + o.desc + `
+          <br><button class="buy-btn" onclick="buyOffer(${i})">Zaplatit</button>`;
+        offersList.appendChild(el);
+      }
+    }
+  }
+
+  function addOffer() {
+    const title = document.getElementById("title").value.trim();
+    const price = document.getElementById("price").value.trim();
+    const cat = document.getElementById("cat").value.trim();
+    const desc = document.getElementById("desc").value.trim();
+
+    log("Pokus o přidání nabídky:");
+    log("Název: " + title + ", Cena: " + price + ", Kategorie: " + cat + ", Popis: " + desc);
+
+    if (!title || !price || !cat || !desc) {
+      log("Chyba: Vyplň všechna pole!");
+      return;
+    }
+
+    const offers = getOffers();
+    offers.push({ title, price, cat, desc });
+    saveOffers(offers);
+    renderOffers();
+    log("Nabídka přidána.");
+  }
+
+  async function tryInitPi() {
+    try {
+      if (!window.Pi) {
+        log("Pi SDK není dostupné! window.Pi=" + window.Pi);
+        return false;
+      }
+      log("Pi SDK nalezen! Typ: " + typeof window.Pi);
+      if (typeof Pi.init !== "function") {
+        log("Pi.init není funkce!");
+        return false;
+      }
+      Pi.init({ version: "2.0", appId: appId, sandbox: true });
+      log("Pi.init zavoláno s appId=" + appId);
+      return true;
+    } catch(e) {
+      log("Chyba při Pi.init: " + e);
+      return false;
+    }
+  }
+
+  async function buyOffer(index) {
+    const offers = getOffers();
+    const offer = offers[index];
+    if (!offer) {
+      log("Chyba: nabídka nenalezena.");
+      return;
+    }
+
+    log("Zahajuji platbu za: " + offer.title + ", částka: " + offer.price + " π");
+    await tryInitPi();
+
+    if (!window.Pi || typeof Pi.createPayment !== "function") {
+      log("Pi.createPayment není dostupná! Typ: " + typeof window.Pi?.createPayment);
+      return;
+    }
+
+    log("Volám Pi.createPayment...");
+
+    try {
+      Pi.createPayment(
+        {
+          amount: parseFloat(offer.price),
+          memo: "Nákup: " + offer.title,
+          metadata: { cat: offer.cat }
+        },
+        function(payment) {
+          log("Platba úspěšná: " + JSON.stringify(payment));
+        },
+        function(error) {
+          log("Chyba platby: " + JSON.stringify(error));
+        }
+      );
+    } catch(e) {
+      log("Výjimka při volání Pi.createPayment: " + e);
+    }
+  }
+
+  log("JavaScript načten.");
+  log("window.Pi typ při načtení: " + typeof window.Pi);
+
+  document.addEventListener("DOMContentLoaded", function() {
+    log("DOMContentLoaded: window.Pi typ: " + typeof window.Pi);
+    renderOffers();
+  });
+
+</script>
+
+</body>
+</html>
