@@ -2,7 +2,6 @@ import { db, auth } from './firebase-config.js';
 import {
   collection,
   getDocs,
-  getDoc,
   addDoc,
   deleteDoc,
   doc,
@@ -28,9 +27,6 @@ function renderAd(docRef, ad) {
     ${currentUser && currentUser.uid === ad.uid
       ? `<button data-id="${docRef.id}" class="edit-btn">Upravit</button>
          <button data-id="${docRef.id}" class="delete-btn">Smazat</button>`
-      : ''}
-    ${ad.piWallet && currentUser && currentUser.uid !== ad.uid
-      ? `<button class="buy-btn" data-id="${docRef.id}" data-price="${ad.price}" data-recipient="${ad.piWallet}">Koupit za ${ad.price} π</button>`
       : ''}
   `;
   adList.appendChild(div);
@@ -69,12 +65,6 @@ adForm.onsubmit = async (e) => {
     author: currentUser.displayName || currentUser.email,
   };
 
-  const userDoc = await getDoc(doc(db, "users", currentUser.uid));
-  if (userDoc.exists()) {
-    const profile = userDoc.data();
-    data.piWallet = profile.piWallet || '';
-  }
-
   if (imageFile && imageFile.size > 0) {
     const reader = new FileReader();
     reader.onload = async () => {
@@ -83,6 +73,7 @@ adForm.onsubmit = async (e) => {
     };
     reader.readAsDataURL(imageFile);
   } else {
+    // Pokud se neupravuje obrázek, načteme původní
     if (editId) {
       const adSnap = await getDocs(collection(db, "inzeraty"));
       adSnap.forEach(docRef => {
@@ -111,12 +102,10 @@ async function ulozit(data) {
 
 adList.addEventListener('click', async (e) => {
   const id = e.target.dataset.id;
-
   if (e.target.classList.contains('delete-btn')) {
     await deleteDoc(doc(db, "inzeraty", id));
     loadAds();
   }
-
   if (e.target.classList.contains('edit-btn')) {
     const snapshot = await getDocs(collection(db, "inzeraty"));
     snapshot.forEach(docRef => {
@@ -130,45 +119,6 @@ adList.addEventListener('click', async (e) => {
         editId = id;
       }
     });
-  }
-
-  if (e.target.classList.contains('buy-btn')) {
-    const price = parseFloat(e.target.dataset.price);
-    const recipient = e.target.dataset.recipient;
-
-    if (typeof window.Pi === "undefined") {
-      alert("Tuto funkci lze používat pouze v Pi Browseru.\n\nwindow.Pi není k dispozici.");
-      return;
-    }
-
-    window.Pi.createPayment(
-      {
-        amount: price,
-        memo: "Platba za inzerát",
-        metadata: {
-          adId: id,
-          timestamp: new Date().toISOString()
-        },
-        to: recipient
-      },
-      {
-        onReadyForServerApproval: (paymentId) => {
-          console.log("[Pi] Čekání na schválení:", paymentId);
-        },
-        onReadyForServerCompletion: (paymentId, txid) => {
-          alert("Platba proběhla úspěšně!");
-          console.log("[Pi] Dokončeno:", paymentId, txid);
-        },
-        onCancel: (paymentId) => {
-          alert("Platba byla zrušena.");
-          console.warn("[Pi] Zrušeno:", paymentId);
-        },
-        onError: (error, paymentId) => {
-          alert("Chyba při platbě: " + error.message);
-          console.error("[Pi] Chyba:", error, paymentId);
-        }
-      }
-    );
   }
 });
 
