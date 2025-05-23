@@ -16,8 +16,10 @@
     <a href="prihlaseni.html">Přihlášení</a>
   </nav>
   <main class="main-content">
-    <form id="registerForm" autocomplete="off" style="max-width:380px;margin:auto;">
+    <form id="registerForm" autocomplete="off" style="max-width:420px;margin:auto;">
       <label>Email:<br><input type="email" id="email" required></label><br><br>
+      <label>Telefon:<br><input type="tel" id="phone" pattern="[0-9+ ]{9,}" required></label><br><br>
+      <label>Nick:<br><input type="text" id="nick" minlength="3" maxlength="24" required></label><br><br>
       <label>Heslo:<br>
         <input type="password" id="password" required>
         <small>(Min. 8 znaků, aspoň 1 velké písmeno a číslo)</small>
@@ -25,6 +27,9 @@
       <label>Potvrdit heslo:<br>
         <input type="password" id="password2" required>
       </label><br><br>
+      <label>Jméno:<br><input type="text" id="fullname"></label><br><br>
+      <label>Stát:<br><input type="text" id="country"></label><br><br>
+      <label>Adresa Pi Network peněženky:<br><input type="text" id="piaddress"></label><br><br>
       <button type="submit">Registrovat</button>
     </form>
     <div id="msg" style="margin:1em 0; color:crimson;"></div>
@@ -33,8 +38,9 @@
     &copy; 2025 Vonkys666
   </footer>
   <script type="module">
-    import { auth } from "./firebase-config.js";
-    import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { auth, db } from "./firebase-config.js";
+    import { createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { setDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const form = document.getElementById('registerForm');
     const msg = document.getElementById('msg');
@@ -47,10 +53,16 @@
 
     form.onsubmit = async (e) => {
       e.preventDefault();
+      msg.style.color = "crimson";
       msg.textContent = "";
       const email = form.email.value.trim();
       const password = form.password.value;
       const password2 = form.password2.value;
+      const nick = form.nick.value.trim();
+      const phone = form.phone.value.trim();
+      const fullname = form.fullname.value.trim();
+      const country = form.country.value.trim();
+      const piaddress = form.piaddress.value.trim();
 
       if (!validatePassword(password)) {
         msg.textContent = "Heslo musí mít alespoň 8 znaků, obsahovat velké písmeno a číslo.";
@@ -60,14 +72,32 @@
         msg.textContent = "Hesla se neshodují!";
         return;
       }
+      if (!nick || !phone) {
+        msg.textContent = "Nick i telefon jsou povinné!";
+        return;
+      }
 
       try {
-        await createUserWithEmailAndPassword(auth, email, password);
+        // Vytvoření účtu
+        const userCred = await createUserWithEmailAndPassword(auth, email, password);
+
+        // Update zobrazeného jména v Auth (volitelné)
+        await updateProfile(userCred.user, { displayName: nick });
+
+        // Uložení rozšířeného profilu do Firestore
+        await setDoc(doc(db, "users", userCred.user.uid), {
+          email,
+          nick,
+          phone,
+          fullname,
+          country,
+          piaddress
+        });
+
         msg.style.color = "green";
         msg.textContent = "Uživatel byl registrován! Přesměrovávám…";
         setTimeout(() => window.location.href = "index.html", 1600);
       } catch (err) {
-        msg.style.color = "crimson";
         msg.textContent = err.message.replace("Firebase:", "");
       }
     };
