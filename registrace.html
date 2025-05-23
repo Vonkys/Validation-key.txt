@@ -1,10 +1,25 @@
-<!DOCTYPE html>
-<html lang="cs">
+<!DOCTYPE html><html lang="cs">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Registrace – Vonky Market</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .password-toggle {
+      position: relative;
+    }
+    .password-toggle input[type="password"],
+    .password-toggle input[type="text"] {
+      padding-right: 30px;
+    }
+    .toggle-icon {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+  </style>
 </head>
 <body>
   <div class="header">
@@ -18,26 +33,31 @@
   <main class="main-content">
     <form id="registerForm" autocomplete="off" style="max-width:420px;margin:auto;">
       <label>Email:<br><input type="email" id="email" required></label><br><br>
-      <label>Telefon:<br><input type="tel" id="phone" pattern="[0-9+ ]{9,}" required></label><br><br>
-      <label>Nick:<br><input type="text" id="nick" minlength="3" maxlength="24" required></label><br><br>
+      <label>Telefon:<br><input type="tel" id="phone" required></label><br><br>
+      <label>Nick:<br><input type="text" id="nick" required></label><br><br>
       <label>Heslo:<br>
-        <input type="password" id="password" required>
+        <div class="password-toggle">
+          <input type="password" id="password" required>
+          <span class="toggle-icon" onclick="togglePassword('password')">Oko</span>
+        </div>
         <small>(Min. 8 znaků, aspoň 1 velké písmeno a číslo)</small>
       </label><br><br>
       <label>Potvrdit heslo:<br>
-        <input type="password" id="password2" required>
+        <div class="password-toggle">
+          <input type="password" id="password2" required>
+          <span class="toggle-icon" onclick="togglePassword('password2')">Oko</span>
+        </div>
       </label><br><br>
       <label>Jméno:<br><input type="text" id="fullname"></label><br><br>
       <label>Stát:<br><input type="text" id="country"></label><br><br>
-      <label>Adresa Pi Network peněženky:<br><input type="text" id="piaddress"></label><br><br>
+      <label>Adresa Pi peněženky:<br><input type="text" id="piaddress"></label><br><br>
       <button type="submit">Registrovat</button>
     </form>
     <div id="msg" style="margin:1em 0; color:crimson;"></div>
   </main>
   <footer>
     &copy; 2025 Vonkys666
-  </footer>
-  <script type="module">
+  </footer>  <script type="module">
     import { auth, db } from "./firebase-config.js";
     import { createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { setDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -46,9 +66,7 @@
     const msg = document.getElementById('msg');
 
     function validatePassword(password) {
-      return password.length >= 8 &&
-        /[A-Z]/.test(password) &&
-        /\d/.test(password);
+      return password.length >= 8 && /[A-Z]/.test(password) && /\d/.test(password);
     }
 
     form.onsubmit = async (e) => {
@@ -65,46 +83,37 @@
       const piaddress = form.piaddress.value.trim();
 
       if (!validatePassword(password)) {
-        msg.textContent = "Heslo musí mít alespoň 8 znaků, obsahovat velké písmeno a číslo.";
+        msg.textContent = "Heslo je slabé. Musí mít min. 8 znaků, velké písmeno a číslo.";
         return;
       }
       if (password !== password2) {
-        msg.textContent = "Hesla se neshodují!";
-        return;
-      }
-      if (!nick || !phone) {
-        msg.textContent = "Nick i telefon jsou povinné!";
+        msg.textContent = "Hesla se neshodují.";
         return;
       }
 
       try {
-        // Vytvoření účtu v Auth
-        const userCred = await createUserWithEmailAndPassword(auth, email, password);
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(cred.user, { displayName: nick });
 
-        // Update zobrazeného jména v Auth (volitelné)
-        await updateProfile(userCred.user, { displayName: nick });
+        const userProfile = { email, nick, phone, fullname, country, piaddress };
+        await setDoc(doc(db, "users", cred.user.uid), userProfile);
 
-        // Uložení rozšířeného profilu do Firestore
-        const userProfile = {
-          email,
-          nick,
-          phone,
-          fullname,
-          country,
-          piaddress
-        };
-        await setDoc(doc(db, "users", userCred.user.uid), userProfile);
-
-        // Uložení i do localStorage (bez hesla)
         localStorage.setItem("vonkyUserProfile", JSON.stringify(userProfile));
-
         msg.style.color = "green";
-        msg.textContent = "Uživatel byl registrován! Přesměrovávám…";
-        setTimeout(() => window.location.href = "index.html", 1600);
+        msg.textContent = "Registrace úspěšná, přesměrování...";
+        setTimeout(() => window.location.href = "profil.html", 1400);
       } catch (err) {
-        msg.textContent = err.message.replace("Firebase:", "");
+        msg.textContent = err.message.replace("Firebase:", "").trim();
       }
     };
-  </script>
-</body>
+  </script>  <script>
+    function togglePassword(id) {
+      const field = document.getElementById(id);
+      if (field.type === "password") {
+        field.type = "text";
+      } else {
+        field.type = "password";
+      }
+    }
+  </script></body>
 </html>
