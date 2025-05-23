@@ -68,7 +68,7 @@ adForm.onsubmit = async (e) => {
     author: currentUser.displayName || currentUser.email,
   };
 
-  // Načti piWallet uživatele
+  // Načti piWallet uživatele z profilu
   const userSnap = await getDocs(collection(db, "users"));
   userSnap.forEach(docRef => {
     if (docRef.id === currentUser.uid) {
