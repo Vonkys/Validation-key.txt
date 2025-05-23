@@ -28,6 +28,9 @@ function renderAd(docRef, ad) {
       ? `<button data-id="${docRef.id}" class="edit-btn">Upravit</button>
          <button data-id="${docRef.id}" class="delete-btn">Smazat</button>`
       : ''}
+    ${ad.piWallet && currentUser && currentUser.uid !== ad.uid
+      ? `<button class="buy-btn" data-id="${docRef.id}" data-price="${ad.price}" data-recipient="${ad.piWallet}">Koupit za ${ad.price} π</button>`
+      : ''}
   `;
   adList.appendChild(div);
 }
@@ -65,6 +68,15 @@ adForm.onsubmit = async (e) => {
     author: currentUser.displayName || currentUser.email,
   };
 
+  // Načti piWallet uživatele
+  const userSnap = await getDocs(collection(db, "users"));
+  userSnap.forEach(docRef => {
+    if (docRef.id === currentUser.uid) {
+      const profile = docRef.data();
+      data.piWallet = profile.piWallet || '';
+    }
+  });
+
   if (imageFile && imageFile.size > 0) {
     const reader = new FileReader();
     reader.onload = async () => {
@@ -73,7 +85,6 @@ adForm.onsubmit = async (e) => {
     };
     reader.readAsDataURL(imageFile);
   } else {
-    // Pokud se neupravuje obrázek, načteme původní
     if (editId) {
       const adSnap = await getDocs(collection(db, "inzeraty"));
       adSnap.forEach(docRef => {
@@ -102,10 +113,12 @@ async function ulozit(data) {
 
 adList.addEventListener('click', async (e) => {
   const id = e.target.dataset.id;
+
   if (e.target.classList.contains('delete-btn')) {
     await deleteDoc(doc(db, "inzeraty", id));
     loadAds();
   }
+
   if (e.target.classList.contains('edit-btn')) {
     const snapshot = await getDocs(collection(db, "inzeraty"));
     snapshot.forEach(docRef => {
@@ -117,6 +130,38 @@ adList.addEventListener('click', async (e) => {
         document.getElementById('category').value = ad.category;
         formTitle.innerText = "Úprava inzerátu";
         editId = id;
+      }
+    });
+  }
+
+  if (e.target.classList.contains('buy-btn')) {
+    const price = parseFloat(e.target.dataset.price);
+    const recipient = e.target.dataset.recipient;
+
+    if (!window.Pi) {
+      alert("Tuto funkci lze používat pouze v Pi Browseru.");
+      return;
+    }
+
+    window.Pi.createPayment({
+      amount: price,
+      memo: "Platba za inzerát",
+      metadata: { adId: id },
+      to: recipient
+    }, {
+      onReadyForServerApproval: (paymentId) => {
+        console.log("Čekání na schválení:", paymentId);
+      },
+      onReadyForServerCompletion: (paymentId, txid) => {
+        alert("Platba úspěšná!");
+        console.log("Platba hotová:", paymentId, txid);
+      },
+      onCancel: (paymentId) => {
+        console.log("Platba zrušena:", paymentId);
+      },
+      onError: (error, paymentId) => {
+        console.error("Chyba při platbě:", error);
+        alert("Chyba při platbě.");
       }
     });
   }
