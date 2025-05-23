@@ -1,10 +1,20 @@
 
 import { db, auth } from './firebase-config.js';
-import { collection, getDocs, addDoc, deleteDoc, doc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import {
+  collection,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  doc,
+  updateDoc
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 
 const adForm = document.getElementById('adForm');
 const adList = document.getElementById('adList');
 const formTitle = document.getElementById('formTitle');
+let currentUser = null;
+let editId = null;
 
 function renderAd(docRef, ad) {
   const div = document.createElement('div');
@@ -15,7 +25,10 @@ function renderAd(docRef, ad) {
     <strong>${ad.price} π</strong><br>
     ${ad.image ? `<img src="${ad.image}" alt="obrázek">` : ''}
     <p><small>Autor: ${ad.author || 'Anonym'}</small></p>
-    ${auth.currentUser && auth.currentUser.uid === ad.uid ? `<button data-id="${docRef.id}" class="delete-btn">Smazat</button>` : ''}
+    ${currentUser && currentUser.uid === ad.uid
+      ? `<button data-id="${docRef.id}" class="edit-btn">Upravit</button>
+         <button data-id="${docRef.id}" class="delete-btn">Smazat</button>`
+      : ''}
   `;
   adList.appendChild(div);
 }
@@ -34,41 +47,63 @@ adForm.onsubmit = async (e) => {
   const formData = new FormData(adForm);
   const data = Object.fromEntries(formData.entries());
 
-  const user = auth.currentUser;
-  if (!user) {
+  if (!currentUser) {
     alert("Musíte být přihlášeni pro přidání inzerátu.");
     return;
   }
 
-  data.uid = user.uid;
-  data.author = user.displayName || user.email;
-  const imageFile = formData.get('image');
+  data.uid = currentUser.uid;
+  data.author = currentUser.displayName || currentUser.email;
 
+  const imageFile = formData.get('image');
   if (imageFile && imageFile.size > 0) {
     const reader = new FileReader();
     reader.onload = async () => {
       data.image = reader.result;
-      await addDoc(collection(db, "inzeraty"), data);
-      adForm.reset();
-      loadAds();
+      await saveAd(data);
     };
     reader.readAsDataURL(imageFile);
   } else {
     data.image = '';
-    await addDoc(collection(db, "inzeraty"), data);
-    adForm.reset();
-    loadAds();
+    await saveAd(data);
   }
 };
 
+async function saveAd(data) {
+  if (editId) {
+    await updateDoc(doc(db, "inzeraty", editId), data);
+    editId = null;
+    formTitle.innerText = "Přidat inzerát";
+  } else {
+    await addDoc(collection(db, "inzeraty"), data);
+  }
+  adForm.reset();
+  loadAds();
+}
+
 adList.addEventListener('click', async (e) => {
+  const id = e.target.dataset.id;
   if (e.target.classList.contains('delete-btn')) {
-    const id = e.target.dataset.id;
     await deleteDoc(doc(db, "inzeraty", id));
     loadAds();
   }
+  if (e.target.classList.contains('edit-btn')) {
+    const snapshot = await getDocs(collection(db, "inzeraty"));
+    snapshot.forEach(docRef => {
+      if (docRef.id === id) {
+        const ad = docRef.data();
+        adForm.title.value = ad.title;
+        adForm.description.value = ad.description;
+        adForm.price.value = ad.price;
+        adForm.category.value = ad.category;
+        formTitle.innerText = "Úprava inzerátu";
+        editId = id;
+      }
+    });
+  }
 });
 
-auth.onAuthStateChanged(() => {
+onAuthStateChanged(auth, user => {
+  currentUser = user;
   loadAds();
 });
