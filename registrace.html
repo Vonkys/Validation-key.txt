@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="cs">
 <head>
@@ -26,11 +27,11 @@
       stroke: black;
       stroke-width: 2;
     }
-    .eye-icon.closed line {
-      display: block;
-    }
     .eye-icon.open line {
       display: none;
+    }
+    .eye-icon.closed line {
+      display: block;
     }
   </style>
 </head>
@@ -74,11 +75,59 @@
   </main>
   <footer>&copy; 2025 Vonkys666</footer>
 
+  <script type="module">
+    import { auth, db } from './firebase-config.js';
+    import { createUserWithEmailAndPassword, updateProfile } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { setDoc, doc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+    const form = document.getElementById('registerForm');
+    const msg = document.getElementById('msg');
+
+    function validatePassword(password) {
+      return password.length >= 8 && /[A-Z]/.test(password) && /\d/.test(password);
+    }
+
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      msg.style.color = "crimson";
+      msg.textContent = "";
+
+      const email = form.email.value.trim();
+      const password = form.password.value;
+      const password2 = form.password2.value;
+      const nick = form.nick.value.trim();
+      const phone = form.phone.value.trim();
+      const fullname = form.fullname.value.trim();
+      const country = form.country.value.trim();
+      const piaddress = form.piaddress.value.trim();
+
+      if (!validatePassword(password)) {
+        msg.textContent = "Heslo je slabé. Musí mít min. 8 znaků, velké písmeno a číslo.";
+        return;
+      }
+      if (password !== password2) {
+        msg.textContent = "Hesla se neshodují.";
+        return;
+      }
+
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(cred.user, { displayName: nick });
+        const userProfile = { email, nick, phone, fullname, country, piaddress };
+        await setDoc(doc(db, "users", cred.user.uid), userProfile);
+        msg.style.color = "green";
+        msg.textContent = "Registrace úspěšná, přesměrování...";
+        setTimeout(() => window.location.href = "profil.html", 1500);
+      } catch (err) {
+        msg.textContent = err.message.replace("Firebase:", "").trim();
+      }
+    };
+  </script>
   <script>
-    function togglePassword(fieldId, icon) {
-      const field = document.getElementById(fieldId);
-      const isVisible = field.type === "text";
-      field.type = isVisible ? "password" : "text";
+    function togglePassword(id, icon) {
+      const input = document.getElementById(id);
+      const isVisible = input.type === "text";
+      input.type = isVisible ? "password" : "text";
       icon.classList.toggle("open", !isVisible);
       icon.classList.toggle("closed", isVisible);
     }
