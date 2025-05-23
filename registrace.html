@@ -1,5 +1,4 @@
-<!DOCTYPE html><html lang="cs">
-<head>
+<!DOCTYPE html><html lang="cs"><head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Registrace – Vonky Market</title>
@@ -17,7 +16,8 @@
       top: 8px;
       right: 8px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 16px;
+      color: #666;
     }
   </style>
 </head>
@@ -38,14 +38,14 @@
       <label>Heslo:<br>
         <div class="password-toggle">
           <input type="password" id="password" required>
-          <span class="toggle-icon" onclick="togglePassword('password')">Oko</span>
+          <span class="toggle-icon" onclick="togglePassword('password')">👁️</span>
         </div>
         <small>(Min. 8 znaků, aspoň 1 velké písmeno a číslo)</small>
       </label><br><br>
       <label>Potvrdit heslo:<br>
         <div class="password-toggle">
           <input type="password" id="password2" required>
-          <span class="toggle-icon" onclick="togglePassword('password2')">Oko</span>
+          <span class="toggle-icon" onclick="togglePassword('password2')">👁️</span>
         </div>
       </label><br><br>
       <label>Jméno:<br><input type="text" id="fullname"></label><br><br>
@@ -60,60 +60,51 @@
   </footer>  <script type="module">
     import { auth, db } from "./firebase-config.js";
     import { createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { setDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { setDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";const form = document.getElementById('registerForm');
+const msg = document.getElementById('msg');
 
-    const form = document.getElementById('registerForm');
-    const msg = document.getElementById('msg');
+function validatePassword(password) {
+  return password.length >= 8 && /[A-Z]/.test(password) && /\d/.test(password);
+}
 
-    function validatePassword(password) {
-      return password.length >= 8 && /[A-Z]/.test(password) && /\d/.test(password);
-    }
+form.onsubmit = async (e) => {
+  e.preventDefault();
+  msg.style.color = "crimson";
+  msg.textContent = "";
+  const email = form.email.value.trim();
+  const password = form.password.value;
+  const password2 = form.password2.value;
+  const nick = form.nick.value.trim();
+  const phone = form.phone.value.trim();
+  const fullname = form.fullname.value.trim();
+  const country = form.country.value.trim();
+  const piaddress = form.piaddress.value.trim();
 
-    form.onsubmit = async (e) => {
-      e.preventDefault();
-      msg.style.color = "crimson";
-      msg.textContent = "";
-      const email = form.email.value.trim();
-      const password = form.password.value;
-      const password2 = form.password2.value;
-      const nick = form.nick.value.trim();
-      const phone = form.phone.value.trim();
-      const fullname = form.fullname.value.trim();
-      const country = form.country.value.trim();
-      const piaddress = form.piaddress.value.trim();
+  if (!validatePassword(password)) {
+    msg.textContent = "Heslo je slabé. Musí mít min. 8 znaků, velké písmeno a číslo.";
+    return;
+  }
+  if (password !== password2) {
+    msg.textContent = "Hesla se neshodují.";
+    return;
+  }
 
-      if (!validatePassword(password)) {
-        msg.textContent = "Heslo je slabé. Musí mít min. 8 znaků, velké písmeno a číslo.";
-        return;
-      }
-      if (password !== password2) {
-        msg.textContent = "Hesla se neshodují.";
-        return;
-      }
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    await updateProfile(cred.user, { displayName: nick });
 
-      try {
-        const cred = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(cred.user, { displayName: nick });
+    const userProfile = { email, nick, phone, fullname, country, piaddress };
+    await setDoc(doc(db, "users", cred.user.uid), userProfile);
 
-        const userProfile = { email, nick, phone, fullname, country, piaddress };
-        await setDoc(doc(db, "users", cred.user.uid), userProfile);
+    localStorage.setItem("vonkyUserProfile", JSON.stringify(userProfile));
+    msg.style.color = "green";
+    msg.textContent = "Registrace úspěšná, přesměrování...";
+    setTimeout(() => window.location.href = "profil.html", 1400);
+  } catch (err) {
+    msg.textContent = err.message.replace("Firebase:", "").trim();
+  }
+};
 
-        localStorage.setItem("vonkyUserProfile", JSON.stringify(userProfile));
-        msg.style.color = "green";
-        msg.textContent = "Registrace úspěšná, přesměrování...";
-        setTimeout(() => window.location.href = "profil.html", 1400);
-      } catch (err) {
-        msg.textContent = err.message.replace("Firebase:", "").trim();
-      }
-    };
-  </script>  <script>
-    function togglePassword(id) {
-      const field = document.getElementById(id);
-      if (field.type === "password") {
-        field.type = "text";
-      } else {
-        field.type = "password";
-      }
-    }
-  </script></body>
+</script>  <script> function togglePassword(id) { const field = document.getElementById(id); field.type = field.type === "password" ? "text" : "password"; } </script></body>
+
 </html>
