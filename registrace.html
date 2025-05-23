@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registrace – Vonky Market</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="header">
+    <img src="img/logo.png" alt="Pi logo" class="logo" />
+    <h1>Registrace</h1>
+  </div>
+  <nav class="nav-grid">
+    <a href="index.html">Domů</a>
+    <a href="prihlaseni.html">Přihlášení</a>
+  </nav>
+  <main class="main-content">
+    <form id="registerForm" autocomplete="off" style="max-width:380px;margin:auto;">
+      <label>Email:<br><input type="email" id="email" required></label><br><br>
+      <label>Heslo:<br>
+        <input type="password" id="password" required>
+        <small>(Min. 8 znaků, aspoň 1 velké písmeno a číslo)</small>
+      </label><br><br>
+      <label>Potvrdit heslo:<br>
+        <input type="password" id="password2" required>
+      </label><br><br>
+      <button type="submit">Registrovat</button>
+    </form>
+    <div id="msg" style="margin:1em 0; color:crimson;"></div>
+  </main>
+  <footer>
+    &copy; 2025 Vonkys666
+  </footer>
+  <script type="module">
+    import { auth } from "./firebase-config.js";
+    import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const form = document.getElementById('registerForm');
+    const msg = document.getElementById('msg');
+
+    function validatePassword(password) {
+      return password.length >= 8 &&
+        /[A-Z]/.test(password) &&
+        /\d/.test(password);
+    }
+
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      msg.textContent = "";
+      const email = form.email.value.trim();
+      const password = form.password.value;
+      const password2 = form.password2.value;
+
+      if (!validatePassword(password)) {
+        msg.textContent = "Heslo musí mít alespoň 8 znaků, obsahovat velké písmeno a číslo.";
+        return;
+      }
+      if (password !== password2) {
+        msg.textContent = "Hesla se neshodují!";
+        return;
+      }
+
+      try {
+        await createUserWithEmailAndPassword(auth, email, password);
+        msg.style.color = "green";
+        msg.textContent = "Uživatel byl registrován! Přesměrovávám…";
+        setTimeout(() => window.location.href = "index.html", 1600);
+      } catch (err) {
+        msg.style.color = "crimson";
+        msg.textContent = err.message.replace("Firebase:", "");
+      }
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profil – Vonky Market</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="header">
+    <img src="img/logo.png" alt="Pi logo" class="logo" />
+    <h1>Můj profil</h1>
+  </div>
+  <nav class="nav-grid">
+    <a href="index.html">Domů</a>
+    <a href="inzeraty.html">Inzeráty</a>
+    <a href="zabava.html">Zábava</a>
+  </nav>
+  <main class="main-content">
+    <div id="profileBox" style="max-width:420px;margin:auto;padding:2em;text-align:center;"></div>
+  </main>
+  <footer>
+    &copy; 2025 Vonkys666
+  </footer>
+  <script type="module">
+    import { auth } from "./firebase-config.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    const box = document.getElementById('profileBox');
+
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        box.innerHTML = `
+          <p><b>Email:</b> ${user.email}</p>
+          <button id="logoutBtn">Odhlásit se</button>
+        `;
+        document.getElementById('logoutBtn').onclick = async () => {
+          await signOut(auth);
+          location.href = "index.html";
+        };
+      } else {
+        box.innerHTML = "<p>Nejste přihlášeni. <a href='prihlaseni.html'>Přihlaste se.</a></p>";
+      }
+    });
+  </script>
+</body>
+</html>
