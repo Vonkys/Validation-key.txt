@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="cs"><head>
+<!DOCTYPE html>
+<html lang="cs">
+<head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Registrace – Vonky Market</title>
@@ -7,17 +9,18 @@
     .password-toggle {
       position: relative;
     }
-    .password-toggle input[type="password"],
-    .password-toggle input[type="text"] {
-      padding-right: 30px;
+    .password-toggle input {
+      padding-right: 40px;
     }
     .toggle-icon {
       position: absolute;
-      top: 8px;
+      top: 50%;
       right: 8px;
+      transform: translateY(-50%);
       cursor: pointer;
-      font-size: 16px;
-      color: #666;
+      width: 20px;
+      height: 20px;
+      fill: #555;
     }
   </style>
 </head>
@@ -38,14 +41,20 @@
       <label>Heslo:<br>
         <div class="password-toggle">
           <input type="password" id="password" required>
-          <span class="toggle-icon" onclick="togglePassword('password')">👁️</span>
+          <svg onclick="togglePassword('password', this)" class="toggle-icon" viewBox="0 0 24 24">
+            <path d="M12 4.5C7 4.5 2.73 8.11 1 12c1.73 3.89 6 7.5 11 7.5s9.27-3.61 11-7.5c-1.73-3.89-6-7.5-11-7.5zm0 13a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
+            <circle cx="12" cy="12" r="2.5"/>
+          </svg>
         </div>
         <small>(Min. 8 znaků, aspoň 1 velké písmeno a číslo)</small>
       </label><br><br>
       <label>Potvrdit heslo:<br>
         <div class="password-toggle">
           <input type="password" id="password2" required>
-          <span class="toggle-icon" onclick="togglePassword('password2')">👁️</span>
+          <svg onclick="togglePassword('password2', this)" class="toggle-icon" viewBox="0 0 24 24">
+            <path d="M12 4.5C7 4.5 2.73 8.11 1 12c1.73 3.89 6 7.5 11 7.5s9.27-3.61 11-7.5c-1.73-3.89-6-7.5-11-7.5zm0 13a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
+            <circle cx="12" cy="12" r="2.5"/>
+          </svg>
         </div>
       </label><br><br>
       <label>Jméno:<br><input type="text" id="fullname"></label><br><br>
@@ -57,54 +66,62 @@
   </main>
   <footer>
     &copy; 2025 Vonkys666
-  </footer>  <script type="module">
+  </footer>
+  <script type="module">
     import { auth, db } from "./firebase-config.js";
     import { createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { setDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";const form = document.getElementById('registerForm');
-const msg = document.getElementById('msg');
+    import { setDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-function validatePassword(password) {
-  return password.length >= 8 && /[A-Z]/.test(password) && /\d/.test(password);
-}
+    const form = document.getElementById('registerForm');
+    const msg = document.getElementById('msg');
 
-form.onsubmit = async (e) => {
-  e.preventDefault();
-  msg.style.color = "crimson";
-  msg.textContent = "";
-  const email = form.email.value.trim();
-  const password = form.password.value;
-  const password2 = form.password2.value;
-  const nick = form.nick.value.trim();
-  const phone = form.phone.value.trim();
-  const fullname = form.fullname.value.trim();
-  const country = form.country.value.trim();
-  const piaddress = form.piaddress.value.trim();
+    function validatePassword(password) {
+      return password.length >= 8 && /[A-Z]/.test(password) && /\d/.test(password);
+    }
 
-  if (!validatePassword(password)) {
-    msg.textContent = "Heslo je slabé. Musí mít min. 8 znaků, velké písmeno a číslo.";
-    return;
-  }
-  if (password !== password2) {
-    msg.textContent = "Hesla se neshodují.";
-    return;
-  }
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      msg.style.color = "crimson";
+      msg.textContent = "";
+      const email = form.email.value.trim();
+      const password = form.password.value;
+      const password2 = form.password2.value;
+      const nick = form.nick.value.trim();
+      const phone = form.phone.value.trim();
+      const fullname = form.fullname.value.trim();
+      const country = form.country.value.trim();
+      const piaddress = form.piaddress.value.trim();
 
-  try {
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
-    await updateProfile(cred.user, { displayName: nick });
+      if (!validatePassword(password)) {
+        msg.textContent = "Heslo je slabé. Musí mít min. 8 znaků, velké písmeno a číslo.";
+        return;
+      }
+      if (password !== password2) {
+        msg.textContent = "Hesla se neshodují.";
+        return;
+      }
 
-    const userProfile = { email, nick, phone, fullname, country, piaddress };
-    await setDoc(doc(db, "users", cred.user.uid), userProfile);
-
-    localStorage.setItem("vonkyUserProfile", JSON.stringify(userProfile));
-    msg.style.color = "green";
-    msg.textContent = "Registrace úspěšná, přesměrování...";
-    setTimeout(() => window.location.href = "profil.html", 1400);
-  } catch (err) {
-    msg.textContent = err.message.replace("Firebase:", "").trim();
-  }
-};
-
-</script>  <script> function togglePassword(id) { const field = document.getElementById(id); field.type = field.type === "password" ? "text" : "password"; } </script></body>
-
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(cred.user, { displayName: nick });
+        const userProfile = { email, nick, phone, fullname, country, piaddress };
+        await setDoc(doc(db, "users", cred.user.uid), userProfile);
+        localStorage.setItem("vonkyUserProfile", JSON.stringify(userProfile));
+        msg.style.color = "green";
+        msg.textContent = "Registrace úspěšná, přesměrování...";
+        setTimeout(() => window.location.href = "profil.html", 1400);
+      } catch (err) {
+        msg.textContent = err.message.replace("Firebase:", "").trim();
+      }
+    };
+  </script>
+  <script>
+    function togglePassword(id, icon) {
+      const field = document.getElementById(id);
+      const isVisible = field.type === "text";
+      field.type = isVisible ? "password" : "text";
+      icon.style.fill = isVisible ? "#555" : "#000";
+    }
+  </script>
+</body>
 </html>
