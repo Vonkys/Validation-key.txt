@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="cs">
+<!DOCTYPE html><html lang="cs">
 <head>
   <meta charset="UTF-8">
   <title>Inzeráty – Vonky Market</title>
@@ -8,15 +7,11 @@
 <body>
   <header>
     <h1>Inzeráty</h1>
-  </header>
-
-  <nav class="nav-grid">
+  </header>  <nav class="nav-grid">
     <a href="index.html">Domů</a>
     <a href="profil.html">Profil</a>
     <a href="zabava.html">Zábava</a>
-  </nav>
-
-  <main class="main-content">
+  </nav>  <main class="main-content">
     <section id="adFormSection">
       <h3>Přidat inzerát</h3>
       <form id="adForm">
@@ -35,22 +30,17 @@
             <option>Ostatní</option>
           </select>
         </label><br><br>
-        <label>Obrázek (URL):<br><input type="url" name="image"></label><br><br>
+        <label>Obrázek (nahrát):<br><input type="file" name="image" accept="image/*"></label><br><br>
         <button type="submit">Přidat inzerát</button>
       </form>
-    </section>
+    </section><section>
+  <h3>Seznam inzerátů</h3>
+  <div id="adList"></div>
+</section>
 
-    <section>
-      <h3>Seznam inzerátů</h3>
-      <div id="adList"></div>
-    </section>
-  </main>
-
-  <footer>
+  </main>  <footer>
     <p>&copy; 2025 Vonkys666</p>
-  </footer>
-
-  <script>
+  </footer>  <script>
     const adForm = document.getElementById('adForm');
     const adList = document.getElementById('adList');
     const currentUser = JSON.parse(localStorage.getItem('vonkyUser') || '{}');
@@ -58,7 +48,7 @@
     function loadAds() {
       const ads = JSON.parse(localStorage.getItem('vonkyAds') || '[]');
       adList.innerHTML = '';
-      ads.forEach((ad, i) => {
+      ads.forEach((ad) => {
         adList.innerHTML += `
           <div style="border:1px solid #ccc; margin:10px 0; padding:10px;">
             <strong>${ad.title}</strong> – <em>${ad.category}</em><br>
@@ -71,9 +61,27 @@
       });
     }
 
-    adForm.onsubmit = (e) => {
+    adForm.onsubmit = async (e) => {
       e.preventDefault();
-      const data = Object.fromEntries(new FormData(adForm).entries());
+      const formData = new FormData(adForm);
+      const imageFile = formData.get('image');
+
+      if (imageFile && imageFile.size > 0) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const data = Object.fromEntries(formData.entries());
+          data.image = reader.result;
+          saveAd(data);
+        };
+        reader.readAsDataURL(imageFile);
+      } else {
+        const data = Object.fromEntries(formData.entries());
+        data.image = '';
+        saveAd(data);
+      }
+    };
+
+    function saveAd(data) {
       data.author = currentUser.username || 'Anonym';
       data.wallet = currentUser.wallet || '';
       const ads = JSON.parse(localStorage.getItem('vonkyAds') || '[]');
@@ -81,13 +89,12 @@
       localStorage.setItem('vonkyAds', JSON.stringify(ads));
       adForm.reset();
       loadAds();
-    };
+    }
 
     if (localStorage.getItem('loggedIn') === 'true') {
       loadAds();
     } else {
       document.getElementById('adFormSection').innerHTML = '<p>Musíte být přihlášeni pro přidání inzerátu.</p>';
     }
-  </script>
-</body>
+  </script></body>
 </html>
