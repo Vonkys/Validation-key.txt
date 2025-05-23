@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="cs">
 <head>
@@ -113,7 +112,16 @@
       try {
         const cred = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(cred.user, { displayName: nick });
-        const userProfile = { email, nick, phone, fullname, country, piaddress };
+
+        const userProfile = {
+          email,
+          nick,
+          phone,
+          fullname,
+          country,
+          piWallet: piaddress  // ← TADY se ukládá správný název
+        };
+
         await setDoc(doc(db, "users", cred.user.uid), userProfile);
         msg.style.color = "green";
         msg.textContent = "Registrace úspěšná, přesměrování...";
@@ -123,6 +131,7 @@
       }
     };
   </script>
+
   <script>
     function togglePassword(id, icon) {
       const input = document.getElementById(id);
