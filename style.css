@@ -1,3 +1,4 @@
+
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
@@ -89,4 +90,36 @@ footer {
   max-width: 150px;
   display: block;
   margin-top: 8px;
+}
+
+.password-toggle {
+  position: relative;
+}
+
+.password-toggle input {
+  padding-right: 40px;
+}
+
+.eye-icon {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  fill: #555;
+}
+
+.eye-icon line {
+  stroke: black;
+  stroke-width: 2;
+}
+
+.eye-icon.open line {
+  display: none;
+}
+
+.eye-icon.closed line {
+  display: block;
 }
