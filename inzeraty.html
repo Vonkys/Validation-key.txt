@@ -64,17 +64,6 @@
   <footer>
     <p>&copy; 2025 Vonkys666</p>
   </footer>
-
-  <!-- TEST: Pi prostředí -->
-  <script>
-    const isPiBrowser = navigator.userAgent.includes("PiBrowser");
-    const hasPi = typeof window.Pi !== "undefined";
-
-    if (!isPiBrowser || !hasPi) {
-      alert("POZOR: Tato stránka není spuštěna správně v Pi Browseru.\n\nuserAgent: " + navigator.userAgent + "\nwindow.Pi: " + typeof window.Pi);
-    }
-  </script>
-
   <script type="module" src="inzeraty-script.js"></script>
 </body>
 </html>
