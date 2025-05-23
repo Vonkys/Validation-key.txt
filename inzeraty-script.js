@@ -43,32 +43,52 @@ function loadAds() {
 
 adForm.onsubmit = async (e) => {
   e.preventDefault();
-  const formData = new FormData(adForm);
-  const data = Object.fromEntries(formData.entries());
 
   if (!currentUser) {
-    alert("Musíte být přihlášeni pro přidání inzerátu.");
+    alert("Musíte být přihlášeni.");
     return;
   }
 
-  data.uid = currentUser.uid;
-  data.author = currentUser.displayName || currentUser.email;
+  const title = document.getElementById("title").value;
+  const description = document.getElementById("description").value;
+  const price = document.getElementById("price").value;
+  const category = document.getElementById("category").value;
+  const imageInput = document.getElementById("image");
+  const imageFile = imageInput.files[0];
 
-  const imageFile = formData.get('image');
+  const data = {
+    title,
+    description,
+    price,
+    category,
+    uid: currentUser.uid,
+    author: currentUser.displayName || currentUser.email,
+  };
+
   if (imageFile && imageFile.size > 0) {
     const reader = new FileReader();
     reader.onload = async () => {
       data.image = reader.result;
-      await saveAd(data);
+      await ulozit(data);
     };
     reader.readAsDataURL(imageFile);
   } else {
-    data.image = '';
-    await saveAd(data);
+    // Pokud se neupravuje obrázek, načteme původní
+    if (editId) {
+      const adSnap = await getDocs(collection(db, "inzeraty"));
+      adSnap.forEach(docRef => {
+        if (docRef.id === editId) {
+          data.image = docRef.data().image || '';
+        }
+      });
+    } else {
+      data.image = '';
+    }
+    await ulozit(data);
   }
 };
 
-async function saveAd(data) {
+async function ulozit(data) {
   if (editId) {
     await updateDoc(doc(db, "inzeraty", editId), data);
     editId = null;
