@@ -78,21 +78,25 @@
       }
 
       try {
-        // Vytvoření účtu
+        // Vytvoření účtu v Auth
         const userCred = await createUserWithEmailAndPassword(auth, email, password);
 
         // Update zobrazeného jména v Auth (volitelné)
         await updateProfile(userCred.user, { displayName: nick });
 
         // Uložení rozšířeného profilu do Firestore
-        await setDoc(doc(db, "users", userCred.user.uid), {
+        const userProfile = {
           email,
           nick,
           phone,
           fullname,
           country,
           piaddress
-        });
+        };
+        await setDoc(doc(db, "users", userCred.user.uid), userProfile);
+
+        // Uložení i do localStorage (bez hesla)
+        localStorage.setItem("vonkyUserProfile", JSON.stringify(userProfile));
 
         msg.style.color = "green";
         msg.textContent = "Uživatel byl registrován! Přesměrovávám…";
