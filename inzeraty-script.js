@@ -1,4 +1,3 @@
-
 import { db, auth } from './firebase-config.js';
 import {
   collection,
@@ -92,10 +91,10 @@ adList.addEventListener('click', async (e) => {
     snapshot.forEach(docRef => {
       if (docRef.id === id) {
         const ad = docRef.data();
-        adForm.title.value = ad.title;
-        adForm.description.value = ad.description;
-        adForm.price.value = ad.price;
-        adForm.category.value = ad.category;
+        document.getElementById('title').value = ad.title;
+        document.getElementById('description').value = ad.description;
+        document.getElementById('price').value = ad.price;
+        document.getElementById('category').value = ad.category;
         formTitle.innerText = "Úprava inzerátu";
         editId = id;
       }
