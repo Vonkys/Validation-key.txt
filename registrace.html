@@ -9,18 +9,31 @@
     .password-toggle {
       position: relative;
     }
+
     .password-toggle input {
       padding-right: 40px;
     }
+
     .toggle-icon {
       position: absolute;
       top: 50%;
-      right: 8px;
+      right: 10px;
       transform: translateY(-50%);
+      width: 24px;
+      height: 24px;
       cursor: pointer;
-      width: 20px;
-      height: 20px;
-      fill: #555;
+    }
+
+    .toggle-icon line.slash {
+      display: none;
+    }
+
+    .toggle-icon.visible line.slash {
+      display: none;
+    }
+
+    .toggle-icon.hidden line.slash {
+      display: block;
     }
   </style>
 </head>
@@ -38,25 +51,30 @@
       <label>Email:<br><input type="email" id="email" required></label><br><br>
       <label>Telefon:<br><input type="tel" id="phone" required></label><br><br>
       <label>Nick:<br><input type="text" id="nick" required></label><br><br>
+
       <label>Heslo:<br>
         <div class="password-toggle">
           <input type="password" id="password" required>
-          <svg onclick="togglePassword('password', this)" class="toggle-icon" viewBox="0 0 24 24">
+          <svg onclick="togglePassword('password', this)" class="toggle-icon hidden" viewBox="0 0 24 24">
             <path d="M12 4.5C7 4.5 2.73 8.11 1 12c1.73 3.89 6 7.5 11 7.5s9.27-3.61 11-7.5c-1.73-3.89-6-7.5-11-7.5zm0 13a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
             <circle cx="12" cy="12" r="2.5"/>
+            <line class="slash" x1="4" y1="4" x2="20" y2="20" stroke="#000" stroke-width="2" />
           </svg>
         </div>
         <small>(Min. 8 znaků, aspoň 1 velké písmeno a číslo)</small>
       </label><br><br>
+
       <label>Potvrdit heslo:<br>
         <div class="password-toggle">
           <input type="password" id="password2" required>
-          <svg onclick="togglePassword('password2', this)" class="toggle-icon" viewBox="0 0 24 24">
+          <svg onclick="togglePassword('password2', this)" class="toggle-icon hidden" viewBox="0 0 24 24">
             <path d="M12 4.5C7 4.5 2.73 8.11 1 12c1.73 3.89 6 7.5 11 7.5s9.27-3.61 11-7.5c-1.73-3.89-6-7.5-11-7.5zm0 13a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
             <circle cx="12" cy="12" r="2.5"/>
+            <line class="slash" x1="4" y1="4" x2="20" y2="20" stroke="#000" stroke-width="2" />
           </svg>
         </div>
       </label><br><br>
+
       <label>Jméno:<br><input type="text" id="fullname"></label><br><br>
       <label>Stát:<br><input type="text" id="country"></label><br><br>
       <label>Adresa Pi peněženky:<br><input type="text" id="piaddress"></label><br><br>
@@ -67,6 +85,7 @@
   <footer>
     &copy; 2025 Vonkys666
   </footer>
+
   <script type="module">
     import { auth, db } from "./firebase-config.js";
     import { createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -104,8 +123,10 @@
       try {
         const cred = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(cred.user, { displayName: nick });
+
         const userProfile = { email, nick, phone, fullname, country, piaddress };
         await setDoc(doc(db, "users", cred.user.uid), userProfile);
+
         localStorage.setItem("vonkyUserProfile", JSON.stringify(userProfile));
         msg.style.color = "green";
         msg.textContent = "Registrace úspěšná, přesměrování...";
@@ -115,12 +136,21 @@
       }
     };
   </script>
+
   <script>
     function togglePassword(id, icon) {
       const field = document.getElementById(id);
       const isVisible = field.type === "text";
       field.type = isVisible ? "password" : "text";
-      icon.style.fill = isVisible ? "#555" : "#000";
+
+      // přepnout CSS třídu pro přeškrtnutí
+      if (icon.classList.contains("hidden")) {
+        icon.classList.remove("hidden");
+        icon.classList.add("visible");
+      } else {
+        icon.classList.remove("visible");
+        icon.classList.add("hidden");
+      }
     }
   </script>
 </body>
