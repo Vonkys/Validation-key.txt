@@ -1,80 +1,73 @@
-
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vonky Market CZ</title>
   <style>
     body {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f8f8ff;
-      color: #222;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      text-align: center;
     }
-    header {
+    .header {
       background-color: #6a0dad;
       color: white;
-      text-align: center;
-      padding: 1rem;
-      position: relative;
+      padding: 16px;
     }
     .logo {
-      height: 80px;
-      margin-bottom: 0.5rem;
+      width: 80px;
+      margin: 12px auto;
+      display: block;
     }
-    nav {
-      background-color: #e0e0ff;
+    .buttons {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      padding: 1rem 0;
-      gap: 1rem;
+      margin: 20px 0;
+      gap: 10px;
     }
-    nav a {
-      background-color: #a678f0;
+    .buttons a {
+      background-color: #a780ff;
       color: white;
-      padding: 0.75rem 1.25rem;
+      padding: 12px 20px;
       border-radius: 8px;
       text-decoration: none;
       font-weight: bold;
+      transition: background-color 0.3s;
     }
-    nav a:hover {
-      background-color: #8f5ce3;
-    }
-    .container {
-      text-align: center;
-      padding: 2rem;
+    .buttons a:hover {
+      background-color: #855ef5;
     }
     footer {
-      text-align: center;
-      font-size: 0.9rem;
-      color: #555;
-      margin-top: 2rem;
-      padding: 1rem;
-      background-color: #f1f1f1;
+      background-color: #6a0dad;
+      color: white;
+      padding: 10px;
+      font-size: 0.9em;
     }
   </style>
 </head>
 <body>
-  <header>
-    <img src="img/logo.png" alt="Pi logo" class="logo" />
+  <div class="header">
+    <img src="Img/logo.png" alt="Pi logo" class="logo">
     <h1>Vonky Market CZ</h1>
-    <p>Připoj se. Inzeruj. Bav se.</p>
-  </header>
-  <nav>
+    <p>Tvůj Pi bazar – jednoduše a bezpečně</p>
+  </div>
+
+  <div class="buttons">
     <a href="registrace.html">Registrace</a>
     <a href="prihlaseni.html">Přihlášení</a>
     <a href="inzeraty.html">Inzeráty</a>
     <a href="zabava.html">Zábava</a>
     <a href="profil.html">Profil</a>
-  </nav>
-  <div class="container">
-    <h2>Vítej na Vonky Marketu!</h2>
-    <p>Přihlas se, přidej inzerát nebo si zahraj jednu z her a užij si svět Pi Networku ve vlastním stylu.</p>
   </div>
+
+  <h2>Vítej na Vonky Marketu!</h2>
+  <p>Přihlas se, přidej inzerát nebo si zahraj jednu z her a užij si svět Pi Networku ve vlastním stylu.</p>
+
   <footer>
-    © 2025 Vonkys666 | Kontakt: <a href="mailto:dr.coolman@seznam.cz">dr.coolman@seznam.cz</a><br>
+    © 2025 Vonkys666 | Kontakt: <a href="mailto:dr.coolman@seznam.cz" style="color:white;">dr.coolman@seznam.cz</a><br>
     Verze 1.1
   </footer>
 </body>
