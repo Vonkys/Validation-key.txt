@@ -1,0 +1,119 @@
+
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Inzeráty – Vonky Market</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Firebase SDK compat verze pro Pi Browser -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBSTnWfyeClcaj7S44dRej9ShT_0BhNOc8",
+      authDomain: "vonkymarket.firebaseapp.com",
+      projectId: "vonkymarket",
+      storageBucket: "vonkymarket.appspot.com",
+      messagingSenderId: "932122908764",
+      appId: "1:932122908764:web:79c4d922904a52196c2e99",
+      measurementId: "G-LB0GW46800"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const adForm = document.getElementById('adForm');
+      const adList = document.getElementById('adList');
+
+      function loadAds() {
+        adList.innerHTML = '';
+        db.collection("inzeraty").get().then((querySnapshot) => {
+          querySnapshot.forEach((doc) => {
+            const ad = doc.data();
+            adList.innerHTML += `
+              <div style="border:1px solid #ccc; margin:10px 0; padding:10px;">
+                <strong>${ad.title}</strong> – <em>${ad.category}</em><br>
+                ${ad.description}<br>
+                <strong>${ad.price} π</strong><br>
+                ${ad.image ? `<img src="${ad.image}" alt="obrázek" style="max-width:150px;">` : ''}
+                <p><small>Autor: ${ad.author || 'Anonym'}</small></p>
+              </div>
+            `;
+          });
+        });
+      }
+
+      adForm.onsubmit = function(e) {
+        e.preventDefault();
+        const formData = new FormData(adForm);
+        const imageFile = formData.get('image');
+
+        if (imageFile && imageFile.size > 0) {
+          const reader = new FileReader();
+          reader.onload = function () {
+            const data = Object.fromEntries(formData.entries());
+            data.image = reader.result;
+            db.collection("inzeraty").add(data).then(() => {
+              adForm.reset();
+              loadAds();
+            });
+          };
+          reader.readAsDataURL(imageFile);
+        } else {
+          const data = Object.fromEntries(formData.entries());
+          data.image = '';
+          db.collection("inzeraty").add(data).then(() => {
+            adForm.reset();
+            loadAds();
+          });
+        }
+      };
+
+      loadAds();
+    });
+  </script>
+</head>
+<body>
+  <header>
+    <h1>Inzeráty</h1>
+  </header>
+  <nav class="nav-grid">
+    <a href="index.html">Domů</a>
+    <a href="profil.html">Profil</a>
+    <a href="zabava.html">Zábava</a>
+  </nav>
+  <main class="main-content">
+    <section id="adFormSection">
+      <h3>Přidat inzerát</h3>
+      <form id="adForm">
+        <label>Název:<br><input type="text" name="title" required></label><br><br>
+        <label>Popis:<br><textarea name="description" required></textarea></label><br><br>
+        <label>Cena (v Pi):<br><input type="number" name="price" required></label><br><br>
+        <label>Kategorie:<br>
+          <select name="category">
+            <option>Zvířata</option>
+            <option>Auto-moto</option>
+            <option>Elektronika</option>
+            <option>Oblečení</option>
+            <option>Knihy</option>
+            <option>Domácnost</option>
+            <option>Pi projekty</option>
+            <option>Ostatní</option>
+          </select>
+        </label><br><br>
+        <label>Obrázek (nahrát):<br><input type="file" name="image" accept="image/*"></label><br><br>
+        <button type="submit">Přidat inzerát</button>
+      </form>
+    </section>
+
+    <section>
+      <h3>Seznam inzerátů</h3>
+      <div id="adList"></div>
+    </section>
+  </main>
+  <footer>
+    <p>&copy; 2025 Vonkys666</p>
+  </footer>
+</body>
+</html>
