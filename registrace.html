@@ -9,12 +9,10 @@
     .password-toggle {
       position: relative;
     }
-
     .password-toggle input {
       padding-right: 40px;
     }
-
-    .toggle-icon {
+    .eye-icon {
       position: absolute;
       top: 50%;
       right: 10px;
@@ -22,30 +20,24 @@
       width: 24px;
       height: 24px;
       cursor: pointer;
+      fill: #555;
     }
-
-    .toggle-icon line.slash {
-      display: none;
+    .eye-icon line {
+      stroke: black;
+      stroke-width: 2;
     }
-
-    .toggle-icon.visible line.slash {
-      display: none;
-    }
-
-    .toggle-icon.hidden line.slash {
+    .eye-icon.closed line {
       display: block;
+    }
+    .eye-icon.open line {
+      display: none;
     }
   </style>
 </head>
 <body>
   <div class="header">
-    <img src="img/logo.png" alt="Pi logo" class="logo" />
     <h1>Registrace</h1>
   </div>
-  <nav class="nav-grid">
-    <a href="index.html">Domů</a>
-    <a href="prihlaseni.html">Přihlášení</a>
-  </nav>
   <main class="main-content">
     <form id="registerForm" autocomplete="off" style="max-width:420px;margin:auto;">
       <label>Email:<br><input type="email" id="email" required></label><br><br>
@@ -55,10 +47,9 @@
       <label>Heslo:<br>
         <div class="password-toggle">
           <input type="password" id="password" required>
-          <svg onclick="togglePassword('password', this)" class="toggle-icon hidden" viewBox="0 0 24 24">
-            <path d="M12 4.5C7 4.5 2.73 8.11 1 12c1.73 3.89 6 7.5 11 7.5s9.27-3.61 11-7.5c-1.73-3.89-6-7.5-11-7.5zm0 13a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
-            <circle cx="12" cy="12" r="2.5"/>
-            <line class="slash" x1="4" y1="4" x2="20" y2="20" stroke="#000" stroke-width="2" />
+          <svg onclick="togglePassword('password', this)" class="eye-icon closed" viewBox="0 0 24 24">
+            <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
+            <line x1="3" y1="3" x2="21" y2="21" />
           </svg>
         </div>
         <small>(Min. 8 znaků, aspoň 1 velké písmeno a číslo)</small>
@@ -67,10 +58,9 @@
       <label>Potvrdit heslo:<br>
         <div class="password-toggle">
           <input type="password" id="password2" required>
-          <svg onclick="togglePassword('password2', this)" class="toggle-icon hidden" viewBox="0 0 24 24">
-            <path d="M12 4.5C7 4.5 2.73 8.11 1 12c1.73 3.89 6 7.5 11 7.5s9.27-3.61 11-7.5c-1.73-3.89-6-7.5-11-7.5zm0 13a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
-            <circle cx="12" cy="12" r="2.5"/>
-            <line class="slash" x1="4" y1="4" x2="20" y2="20" stroke="#000" stroke-width="2" />
+          <svg onclick="togglePassword('password2', this)" class="eye-icon closed" viewBox="0 0 24 24">
+            <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
+            <line x1="3" y1="3" x2="21" y2="21" />
           </svg>
         </div>
       </label><br><br>
@@ -82,75 +72,15 @@
     </form>
     <div id="msg" style="margin:1em 0; color:crimson;"></div>
   </main>
-  <footer>
-    &copy; 2025 Vonkys666
-  </footer>
-
-  <script type="module">
-    import { auth, db } from "./firebase-config.js";
-    import { createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { setDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-    const form = document.getElementById('registerForm');
-    const msg = document.getElementById('msg');
-
-    function validatePassword(password) {
-      return password.length >= 8 && /[A-Z]/.test(password) && /\d/.test(password);
-    }
-
-    form.onsubmit = async (e) => {
-      e.preventDefault();
-      msg.style.color = "crimson";
-      msg.textContent = "";
-      const email = form.email.value.trim();
-      const password = form.password.value;
-      const password2 = form.password2.value;
-      const nick = form.nick.value.trim();
-      const phone = form.phone.value.trim();
-      const fullname = form.fullname.value.trim();
-      const country = form.country.value.trim();
-      const piaddress = form.piaddress.value.trim();
-
-      if (!validatePassword(password)) {
-        msg.textContent = "Heslo je slabé. Musí mít min. 8 znaků, velké písmeno a číslo.";
-        return;
-      }
-      if (password !== password2) {
-        msg.textContent = "Hesla se neshodují.";
-        return;
-      }
-
-      try {
-        const cred = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(cred.user, { displayName: nick });
-
-        const userProfile = { email, nick, phone, fullname, country, piaddress };
-        await setDoc(doc(db, "users", cred.user.uid), userProfile);
-
-        localStorage.setItem("vonkyUserProfile", JSON.stringify(userProfile));
-        msg.style.color = "green";
-        msg.textContent = "Registrace úspěšná, přesměrování...";
-        setTimeout(() => window.location.href = "profil.html", 1400);
-      } catch (err) {
-        msg.textContent = err.message.replace("Firebase:", "").trim();
-      }
-    };
-  </script>
+  <footer>&copy; 2025 Vonkys666</footer>
 
   <script>
-    function togglePassword(id, icon) {
-      const field = document.getElementById(id);
+    function togglePassword(fieldId, icon) {
+      const field = document.getElementById(fieldId);
       const isVisible = field.type === "text";
       field.type = isVisible ? "password" : "text";
-
-      // přepnout CSS třídu pro přeškrtnutí
-      if (icon.classList.contains("hidden")) {
-        icon.classList.remove("hidden");
-        icon.classList.add("visible");
-      } else {
-        icon.classList.remove("visible");
-        icon.classList.add("hidden");
-      }
+      icon.classList.toggle("open", !isVisible);
+      icon.classList.toggle("closed", isVisible);
     }
   </script>
 </body>
