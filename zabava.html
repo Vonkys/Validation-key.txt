@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Zábava – Vonky Market</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    .game-card {
+      background: #ede9fe;
+      padding: 1rem;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .game-card img {
+      width: 100px;
+      height: 100px;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Zábava</h1>
+  </header>
+
+  <nav class="nav-grid">
+    <a href="index.html">Domů</a>
+    <a href="inzeraty.html">Inzeráty</a>
+    <a href="profil.html">Profil</a>
+  </nav>
+
+  <main class="main-content">
+    <p>Než něco prodáš, trochu se zabav!</p>
+
+    <div class="game-grid">
+      <div class="game-card">
+        <img src="https://cdn-icons-png.flaticon.com/512/3768/3768752.png" alt="Farma">
+        <h3>Farma</h3>
+        <a href="https://vonkys.github.io/Farm/" target="_blank">Hrát</a>
+      </div>
+
+      <div class="game-card">
+        <img src="https://cdn-icons-png.flaticon.com/512/3050/3050525.png" alt="Snake">
+        <h3>Snake</h3>
+        <a href="https://vonkys.github.io/Snake/" target="_blank">Hrát</a>
+      </div>
+
+      <div class="game-card">
+        <img src="https://cdn-icons-png.flaticon.com/512/9205/9205564.png" alt="Pexeso">
+        <h3>Pexeso</h3>
+        <a href="https://vonkys.github.io/vonkyso/" target="_blank">Hrát</a>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Vonkys666</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Přihlášení – Vonky Market</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Přihlášení</h1>
+  </header>
+
+  <nav class="nav-grid">
+    <a href="index.html">Domů</a>
+    <a href="registrace.html">Registrace</a>
+    <a href="inzeraty.html">Inzeráty</a>
+    <a href="zabava.html">Zábava</a>
+  </nav>
+
+  <main class="main-content">
+    <form id="loginForm">
+      <label>Uživatelské jméno:<br><input type="text" name="username" required></label><br><br>
+      <label>Heslo:<br><input type="password" name="password" required></label><br><br>
+      <button type="submit">Přihlásit se</button>
+    </form>
+    <p id="loginMsg"></p>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Vonkys666</p>
+  </footer>
+
+  <script>
+    const loginForm = document.getElementById('loginForm');
+    const loginMsg = document.getElementById('loginMsg');
+
+    loginForm.onsubmit = (e) => {
+      e.preventDefault();
+      const stored = JSON.parse(localStorage.getItem('vonkyUser') || '{}');
+      const user = loginForm.username.value;
+      const pass = loginForm.password.value;
+
+      if (stored.username === user && stored.password === pass) {
+        localStorage.setItem('loggedIn', 'true');
+        loginMsg.textContent = 'Přihlášení úspěšné!';
+        window.location.href = 'profil.html';
+      } else {
+        loginMsg.textContent = 'Špatné přihlašovací údaje.';
+      }
+    };
+  </script>
+</body>
+</html>

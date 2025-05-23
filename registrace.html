@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Registrace – Vonky Market</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Registrace</h1>
+  </header>
+
+  <nav class="nav-grid">
+    <a href="index.html">Domů</a>
+    <a href="prihlaseni.html">Přihlášení</a>
+    <a href="inzeraty.html">Inzeráty</a>
+    <a href="zabava.html">Zábava</a>
+  </nav>
+
+  <main class="main-content">
+    <form id="regForm">
+      <label>Jméno a příjmení:<br><input type="text" name="name" required></label><br><br>
+      <label>Uživatelské jméno:<br><input type="text" name="username" required></label><br><br>
+      <label>Heslo:<br><input type="password" name="password" required></label><br><br>
+      <label>E-mail:<br><input type="email" name="email" required></label><br><br>
+      <label>Telefon:<br><input type="tel" name="phone" required></label><br><br>
+      <label>Pi Nick (přezdívka):<br><input type="text" name="pinick" required></label><br><br>
+      <label>Adresa Pi peněženky:<br><input type="text" name="wallet"></label><br><br>
+      <button type="submit">Zaregistrovat se</button>
+    </form>
+    <p id="regMsg"></p>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Vonkys666</p>
+  </footer>
+
+  <script>
+    const form = document.getElementById('regForm');
+    const msg = document.getElementById('regMsg');
+
+    form.onsubmit = (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(form).entries());
+      data.registered = new Date().toISOString();
+      localStorage.setItem('vonkyUser', JSON.stringify(data));
+      msg.textContent = 'Registrace úspěšná! Můžete se přihlásit.';
+      form.reset();
+    };
+  </script>
+</body>
+</html>

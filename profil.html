@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Profil – Vonky Market</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Můj profil</h1>
+  </header>
+
+  <nav class="nav-grid">
+    <a href="index.html">Domů</a>
+    <a href="inzeraty.html">Inzeráty</a>
+    <a href="zabava.html">Zábava</a>
+  </nav>
+
+  <main class="main-content">
+    <div id="profileData"></div>
+
+    <h3>Smazat účet</h3>
+    <form id="deleteForm">
+      <label>Potvrďte heslo:<br><input type="password" id="delPassword" required></label><br><br>
+      <button type="submit">Smazat účet</button>
+    </form>
+    <p id="deleteMsg"></p>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Vonkys666</p>
+  </footer>
+
+  <script>
+    const profileData = document.getElementById('profileData');
+    const user = JSON.parse(localStorage.getItem('vonkyUser') || '{}');
+
+    if (localStorage.getItem('loggedIn') !== 'true') {
+      profileData.innerHTML = '<p>Musíte být přihlášeni.</p>';
+    } else {
+      profileData.innerHTML = `
+        <p><strong>Jméno:</strong> ${user.name}</p>
+        <p><strong>Uživatelské jméno:</strong> ${user.username}</p>
+        <p><strong>Email:</strong> ${user.email}</p>
+        <p><strong>Telefon:</strong> ${user.phone}</p>
+        <p><strong>Pi Nick:</strong> ${user.pinick}</p>
+        <p><strong>Adresa peněženky:</strong> ${user.wallet || 'neuvedena'}</p>
+      `;
+    }
+
+    const deleteForm = document.getElementById('deleteForm');
+    const deleteMsg = document.getElementById('deleteMsg');
+
+    deleteForm.onsubmit = (e) => {
+      e.preventDefault();
+      const input = document.getElementById('delPassword').value;
+      if (input === user.password) {
+        localStorage.removeItem('vonkyUser');
+        localStorage.removeItem('loggedIn');
+        deleteMsg.textContent = 'Účet smazán. Obnovte stránku.';
+      } else {
+        deleteMsg.textContent = 'Nesprávné heslo.';
+      }
+    };
+  </script>
+</body>
+</html>
