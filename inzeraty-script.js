@@ -2,6 +2,7 @@ import { db, auth } from './firebase-config.js';
 import {
   collection,
   getDocs,
+  getDoc,
   addDoc,
   deleteDoc,
   doc,
@@ -68,14 +69,12 @@ adForm.onsubmit = async (e) => {
     author: currentUser.displayName || currentUser.email,
   };
 
-  // Načti piWallet uživatele z profilu
-  const userSnap = await getDocs(collection(db, "users"));
-  userSnap.forEach(docRef => {
-    if (docRef.id === currentUser.uid) {
-      const profile = docRef.data();
-      data.piWallet = profile.piWallet || '';
-    }
-  });
+  // Načti piWallet uživatele z profilu pomocí getDoc
+  const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+  if (userDoc.exists()) {
+    const profile = userDoc.data();
+    data.piWallet = profile.piWallet || '';
+  }
 
   if (imageFile && imageFile.size > 0) {
     const reader = new FileReader();
