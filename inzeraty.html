@@ -14,28 +14,22 @@
 <body>
   <header>
     <h1>Inzeráty</h1>
+    <button onclick="piLogin()">Přihlásit přes Pi</button>
   </header>
+
   <nav class="nav-grid">
     <a href="index.html">Domů</a>
     <a href="profil.html">Profil</a>
     <a href="zabava.html">Zábava</a>
   </nav>
+
   <main class="main-content">
     <section id="adFormSection">
       <h3 id="formTitle">Přidat inzerát</h3>
       <form id="adForm">
-        <label for="title">Název:<br>
-          <input type="text" name="title" id="title" required>
-        </label><br><br>
-
-        <label for="description">Popis:<br>
-          <textarea name="description" id="description" required></textarea>
-        </label><br><br>
-
-        <label for="price">Cena (v Pi):<br>
-          <input type="number" name="price" id="price" required>
-        </label><br><br>
-
+        <label for="title">Název:<br><input type="text" name="title" id="title" required></label><br><br>
+        <label for="description">Popis:<br><textarea name="description" id="description" required></textarea></label><br><br>
+        <label for="price">Cena (v Pi):<br><input type="number" name="price" id="price" required></label><br><br>
         <label for="category">Kategorie:<br>
           <select name="category" id="category">
             <option>Zvířata</option>
@@ -48,11 +42,7 @@
             <option>Ostatní</option>
           </select>
         </label><br><br>
-
-        <label for="image">Obrázek (nahrát):<br>
-          <input type="file" name="image" id="image" accept="image/*">
-        </label><br><br>
-
+        <label for="image">Obrázek (nahrát):<br><input type="file" name="image" id="image" accept="image/*"></label><br><br>
         <button type="submit">Uložit inzerát</button>
       </form>
     </section>
@@ -61,9 +51,25 @@
       <div id="adList"></div>
     </section>
   </main>
+
   <footer>
     <p>&copy; 2025 Vonkys666</p>
   </footer>
+
+  <!-- Přihlášení přes Pi -->
+  <script>
+    function piLogin() {
+      if (typeof window.Pi !== "undefined") {
+        window.Pi.authenticate([], function(result) {
+          console.log("Pi Login:", result);
+          alert("Přihlášen jako " + result.user.username);
+        });
+      } else {
+        alert("Spusť aplikaci v Pi Browseru.");
+      }
+    }
+  </script>
+
   <script type="module" src="inzeraty-script.js"></script>
 </body>
 </html>
