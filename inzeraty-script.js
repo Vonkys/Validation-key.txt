@@ -69,7 +69,6 @@ adForm.onsubmit = async (e) => {
     author: currentUser.displayName || currentUser.email,
   };
 
-  // Načti piWallet uživatele z profilu pomocí getDoc
   const userDoc = await getDoc(doc(db, "users", currentUser.uid));
   if (userDoc.exists()) {
     const profile = userDoc.data();
@@ -137,32 +136,39 @@ adList.addEventListener('click', async (e) => {
     const price = parseFloat(e.target.dataset.price);
     const recipient = e.target.dataset.recipient;
 
-    if (!window.Pi) {
-      alert("Tuto funkci lze používat pouze v Pi Browseru.");
+    if (typeof window.Pi === "undefined") {
+      alert("Tuto funkci lze používat pouze v Pi Browseru.\n\nwindow.Pi není k dispozici.");
       return;
     }
 
-    window.Pi.createPayment({
-      amount: price,
-      memo: "Platba za inzerát",
-      metadata: { adId: id },
-      to: recipient
-    }, {
-      onReadyForServerApproval: (paymentId) => {
-        console.log("Čekání na schválení:", paymentId);
+    window.Pi.createPayment(
+      {
+        amount: price,
+        memo: "Platba za inzerát",
+        metadata: {
+          adId: id,
+          timestamp: new Date().toISOString()
+        },
+        to: recipient
       },
-      onReadyForServerCompletion: (paymentId, txid) => {
-        alert("Platba úspěšná!");
-        console.log("Platba hotová:", paymentId, txid);
-      },
-      onCancel: (paymentId) => {
-        console.log("Platba zrušena:", paymentId);
-      },
-      onError: (error, paymentId) => {
-        console.error("Chyba při platbě:", error);
-        alert("Chyba při platbě.");
+      {
+        onReadyForServerApproval: (paymentId) => {
+          console.log("[Pi] Čekání na schválení:", paymentId);
+        },
+        onReadyForServerCompletion: (paymentId, txid) => {
+          alert("Platba proběhla úspěšně!");
+          console.log("[Pi] Dokončeno:", paymentId, txid);
+        },
+        onCancel: (paymentId) => {
+          alert("Platba byla zrušena.");
+          console.warn("[Pi] Zrušeno:", paymentId);
+        },
+        onError: (error, paymentId) => {
+          alert("Chyba při platbě: " + error.message);
+          console.error("[Pi] Chyba:", error, paymentId);
+        }
       }
-    });
+    );
   }
 });
 
