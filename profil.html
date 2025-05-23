@@ -17,26 +17,64 @@
     <a href="zabava.html">Zábava</a>
   </nav>
   <main class="main-content">
-    <div id="profileBox" style="max-width:420px;margin:auto;padding:2em;text-align:center;"></div>
+    <div id="profileBox" style="max-width:440px;margin:auto;padding:2em;text-align:center;"></div>
   </main>
   <footer>
     &copy; 2025 Vonkys666
   </footer>
   <script type="module">
-    import { auth } from "./firebase-config.js";
-    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { auth, db } from "./firebase-config.js";
+    import { onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getDoc, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
     const box = document.getElementById('profileBox');
 
-    onAuthStateChanged(auth, user => {
-      if (user) {
-        box.innerHTML = `
+    function renderProfile(userData, user) {
+      box.innerHTML = `
+        <form id="profileForm">
           <p><b>Email:</b> ${user.email}</p>
-          <button id="logoutBtn">Odhlásit se</button>
-        `;
-        document.getElementById('logoutBtn').onclick = async () => {
-          await signOut(auth);
-          location.href = "index.html";
-        };
+          <label>Nick:<br><input type="text" name="nick" value="${userData.nick || ""}" required></label><br><br>
+          <label>Telefon:<br><input type="tel" name="phone" value="${userData.phone || ""}" required></label><br><br>
+          <label>Jméno:<br><input type="text" name="fullname" value="${userData.fullname || ""}"></label><br><br>
+          <label>Stát:<br><input type="text" name="country" value="${userData.country || ""}"></label><br><br>
+          <label>Adresa Pi Network peněženky:<br><input type="text" name="piaddress" value="${userData.piaddress || ""}"></label><br><br>
+          <button type="submit">Uložit změny</button>
+        </form>
+        <br>
+        <button id="logoutBtn">Odhlásit se</button>
+        <div id="msg" style="margin:1em 0; color:crimson;"></div>
+      `;
+
+      document.getElementById('profileForm').onsubmit = async e => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        try {
+          await setDoc(doc(db, "users", user.uid), {
+            email: user.email,
+            nick: formData.get("nick"),
+            phone: formData.get("phone"),
+            fullname: formData.get("fullname"),
+            country: formData.get("country"),
+            piaddress: formData.get("piaddress")
+          });
+          document.getElementById('msg').style.color = "green";
+          document.getElementById('msg').textContent = "Změny byly uloženy.";
+        } catch (err) {
+          document.getElementById('msg').style.color = "crimson";
+          document.getElementById('msg').textContent = "Chyba: " + err.message;
+        }
+      };
+
+      document.getElementById('logoutBtn').onclick = async () => {
+        await signOut(auth);
+        location.href = "index.html";
+      };
+    }
+
+    onAuthStateChanged(auth, async user => {
+      if (user) {
+        const docSnap = await getDoc(doc(db, "users", user.uid));
+        renderProfile(docSnap.exists() ? docSnap.data() : {}, user);
       } else {
         box.innerHTML = "<p>Nejste přihlášeni. <a href='prihlaseni.html'>Přihlaste se.</a></p>";
       }
