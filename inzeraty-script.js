@@ -1,6 +1,4 @@
-// ----- Vonky Market - Inzeráty s Pi autentizací a tlačítkem pro platbu -----
-// Tento skript umožňuje přidávání, editaci a mazání inzerátů,
-// navíc integruje tlačítko pro zaplacení 0.5 Pi přes Pi Network (zatím jen testovací alert).
+// ----- Vonky Market - Inzeráty s Pi platbou (ZAPLACENO) -----
 
 import { db, auth } from './firebase-config.js';
 import {
@@ -18,7 +16,7 @@ const piScopes = ['payments'];
 
 if (window.Pi) {
   Pi.authenticate(piScopes, function (onIncompletePaymentFound) {
-    // Zde lze dořešit případné nedokončené platby (budoucí rozšíření)
+    // Sem lze v budoucnu řešit nedokončené platby
   })
     .then(function (auth) {
       console.log('Pi Network uživatel autentizován:', auth.user.uid);
@@ -48,10 +46,14 @@ function renderAd(docRef, ad) {
     ${ad.image ? `<img src="${ad.image}" alt="obrázek">` : ''}
     <p><small>Autor: ${ad.author || 'Anonym'}</small></p>
     ${
-      currentUser && currentUser.uid === ad.uid
-        ? `<button data-id="${docRef.id}" class="edit-btn">Upravit</button>
-           <button data-id="${docRef.id}" class="delete-btn">Smazat</button>`
-        : `<button data-id="${docRef.id}" data-title="${ad.title}" class="pay-pi-btn">Zaplatit 0.5 Pi</button>`
+      ad.paid
+        ? `<span style="color: green; font-weight: bold;">ZAPLACENO</span>`
+        : (
+          currentUser && currentUser.uid === ad.uid
+            ? `<button data-id="${docRef.id}" class="edit-btn">Upravit</button>
+               <button data-id="${docRef.id}" class="delete-btn">Smazat</button>`
+            : `<button data-id="${docRef.id}" data-title="${ad.title}" class="pay-pi-btn">Zaplatit 0.5 Pi</button>`
+        )
     }
   `;
   adList.appendChild(div);
@@ -151,7 +153,7 @@ adList.addEventListener('click', async (e) => {
   }
   if (e.target.classList.contains('pay-pi-btn')) {
     const title = e.target.dataset.title || '';
-    payWithPi(title, id); // Volá se základ pro Pi platbu (zatím pouze alert)
+    payWithPi(title, id); // Volá platbu Pi
   }
 });
 
@@ -161,8 +163,40 @@ onAuthStateChanged(auth, user => {
   loadAds();
 });
 
-// --- Funkce pro platbu přes Pi Network (zatím jen testovací alert) ---
-function payWithPi(title, inzeratId) {
-  alert(`Tady bude platba Pi za inzerát "${title}" (ID: ${inzeratId})!`);
-  // V dalším kroku zde bude volání Pi.createPayment...
+// --- Funkce pro platbu přes Pi Network s označením zaplaceno ---
+async function payWithPi(title, inzeratId) {
+  if (!window.Pi) {
+    alert('Pi SDK není načteno.');
+    return;
+  }
+
+  Pi.createPayment(
+    {
+      amount: 0.5,
+      memo: `Platba za inzerát: ${title}`,
+      metadata: { inzeratId: inzeratId }
+    },
+    {
+      onReadyForServerApproval: function (paymentId) {
+        // Sandbox – okamžitě schvalujeme (na mainnetu musí potvrdit backend)
+        Pi.approvePayment(paymentId);
+      },
+      onReadyForServerCompletion: async function (paymentId, txid) {
+        try {
+          await updateDoc(doc(db, "inzeraty", inzeratId), { paid: true });
+          alert('Platba proběhla úspěšně! Inzerát je nyní zaplacený.');
+          Pi.completePayment(paymentId, txid);
+          loadAds();
+        } catch (err) {
+          alert('Nastala chyba při označení inzerátu jako zaplaceného: ' + err);
+        }
+      },
+      onCancel: function (paymentId) {
+        alert('Platba byla zrušena.');
+      },
+      onError: function (error, payment) {
+        alert('Nastala chyba při platbě: ' + error);
+      }
+    }
+  );
 }
