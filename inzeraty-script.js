@@ -11,12 +11,15 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 
-// --- Pi SDK autentizace při načtení stránky ---
-const piScopes = ['payments'];
-
+// --- Inicializace Pi SDK ---
 if (window.Pi) {
-  Pi.authenticate(piScopes, function (onIncompletePaymentFound) {
-    // Sem lze v budoucnu řešit nedokončené platby
+  Pi.init({
+    version: "2.0",
+    sandbox: true // Změň na false při přechodu na mainnet
+  });
+
+  Pi.authenticate(['payments'], function (onIncompletePaymentFound) {
+    // Zde můžeš řešit nedokončené platby
   })
     .then(function (auth) {
       console.log('Pi Network uživatel autentizován:', auth.user.uid);
@@ -102,7 +105,6 @@ adForm.onsubmit = async (e) => {
     };
     reader.readAsDataURL(imageFile);
   } else {
-    // Pokud se neupravuje obrázek, načteme původní
     if (editId) {
       const adSnap = await getDocs(collection(db, "inzeraty"));
       adSnap.forEach(docRef => {
@@ -153,7 +155,7 @@ adList.addEventListener('click', async (e) => {
   }
   if (e.target.classList.contains('pay-pi-btn')) {
     const title = e.target.dataset.title || '';
-    payWithPi(title, id); // Volá platbu Pi
+    payWithPi(title, id);
   }
 });
 
@@ -178,7 +180,7 @@ async function payWithPi(title, inzeratId) {
     },
     {
       onReadyForServerApproval: function (paymentId) {
-        // Sandbox – okamžitě schvalujeme (na mainnetu musí potvrdit backend)
+        // Sandbox: okamžité schválení bez backendu
         Pi.approvePayment(paymentId);
       },
       onReadyForServerCompletion: async function (paymentId, txid) {
