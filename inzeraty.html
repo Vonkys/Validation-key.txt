@@ -5,6 +5,7 @@
   <title>Inzeráty – Vonky Market</title>
   <link rel="stylesheet" href="style.css" />
   <script type="module" src="firebase-config.js"></script>
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
   <style>
     .ad-card { border:1px solid #ccc; margin:10px 0; padding:10px; border-radius:8px; }
     .ad-card img { max-width: 150px; display:block; margin-top:8px; }
@@ -15,11 +16,13 @@
   <header>
     <h1>Inzeráty</h1>
   </header>
+
   <nav class="nav-grid">
     <a href="index.html">Domů</a>
     <a href="profil.html">Profil</a>
     <a href="zabava.html">Zábava</a>
   </nav>
+
   <main class="main-content">
     <section id="adFormSection">
       <h3 id="formTitle">Přidat inzerát</h3>
@@ -56,20 +59,18 @@
         <button type="submit">Uložit inzerát</button>
       </form>
     </section>
+
     <section>
       <h3>Seznam inzerátů</h3>
       <div id="adList"></div>
     </section>
   </main>
+
   <footer>
     <p>&copy; 2025 Vonkys666</p>
   </footer>
-  <script type="module" src="inzeraty-script.js"></script>
-  <!-- Pi SDK a inicializace -->
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-  <script>
-    // Inicializace Pi SDK v sandbox módu (pro Test-Pi platby)
-    Pi.init({ version: "2.0", sandbox: true });
-  </script>
+
+  <!-- Hlavní JS script aplikace -->
+  <script type="module" src="inzeraty-script.js" defer></script>
 </body>
 </html>
