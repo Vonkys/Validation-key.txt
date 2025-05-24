@@ -1,62 +1,45 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-  <meta charset="UTF-8">
-  <title>Test Pi Platby</title>
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-  <style>
-    body { font-family: sans-serif; padding: 2em; background: #f0f0f0; }
-    button { padding: 1em; font-size: 1.2em; }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vonky Market CZ</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Test Pi Platby</h1>
-  <button onclick="spustitPlatbu()">Zaplatit 0.5 Pi</button>
-
-  <script>
-    if (window.Pi) {
-      Pi.init({
-        version: "2.0",
-        sandbox: true
-      });
-
-      Pi.authenticate(['payments'], function (onIncompletePaymentFound) {})
-        .then(function (auth) {
-          console.log("Pi uživatel přihlášen:", auth.user.uid);
-        })
-        .catch(function (error) {
-          console.error("Chyba při autentizaci:", error);
-        });
-
-      function spustitPlatbu() {
-        Pi.createPayment(
-          {
-            amount: 0.5,
-            memo: "Testovací platba",
-            metadata: { test: true }
-          },
-          {
-            onReadyForServerApproval: function (paymentId) {
-              console.log("Schvaluji platbu:", paymentId);
-              Pi.approvePayment(paymentId);
-            },
-            onReadyForServerCompletion: function (paymentId, txid) {
-              console.log("Platba hotová:", paymentId, txid);
-              Pi.completePayment(paymentId, txid);
-              alert("Platba úspěšná!");
-            },
-            onCancel: function (paymentId) {
-              console.log("Platba zrušena:", paymentId);
-            },
-            onError: function (error, paymentId) {
-              console.error("Chyba platby:", error);
-            }
-          }
-        );
+  <div class="header">
+    <img src="img/logo.png" alt="Pi logo" class="logo" />
+    <h1>Vonky Market CZ</h1>
+    <p>Tvůj Pi bazar – jednoduše a bezpečně</p>
+  </div>
+  <div class="buttons">
+    <a href="registrace.html">Registrace</a>
+    <a href="prihlaseni.html">Přihlášení</a>
+    <a href="profil.html" id="profilBtn" style="display:none;">Profil</a>
+    <a href="inzeraty.html">Inzeráty</a>
+    <a href="zabava.html">Zábava</a>
+  </div>
+  <div id="status" style="text-align:center;margin:1em;color:#155724;"></div>
+  <h2>Vítej na Vonky Marketu!</h2>
+  <p>Přihlas se, přidej inzerát nebo si zahraj jednu z her a užij si svět Pi Networku ve vlastním stylu.</p>
+  <footer>
+    © 2025 Vonkys666 | Kontakt: <a href="mailto:dr.coolman@seznam.cz" style="color:white;">dr.coolman@seznam.cz</a><br />
+    Verze 1.1
+  </footer>
+  <script type="module">
+    import { auth } from "./firebase-config.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    const status = document.getElementById('status');
+    const profilBtn = document.getElementById('profilBtn');
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        profilBtn.style.display = "inline-block";
+        status.textContent = "Jste přihlášen jako: " + (user.email || "uživatel");
+      } else {
+        profilBtn.style.display = "none";
+        status.textContent = "";
       }
-    } else {
-      alert("Pi SDK není načteno.");
-    }
+    });
   </script>
 </body>
 </html>
