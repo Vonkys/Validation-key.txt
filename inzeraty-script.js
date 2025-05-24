@@ -11,11 +11,13 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 
-// --- Inicializace Pi SDK ---
+// --- Inicializace Pi SDK (sandbox nebo produkce) ---
 if (window.Pi) {
+  const isSandbox = window.location.hostname.includes('sandbox.minepi.com');
+
   Pi.init({
     version: "2.0",
-    sandbox: true // Změň na false při přechodu na mainnet
+    sandbox: isSandbox
   });
 
   Pi.authenticate(['payments'], function (onIncompletePaymentFound) {
@@ -180,7 +182,7 @@ async function payWithPi(title, inzeratId) {
     },
     {
       onReadyForServerApproval: function (paymentId) {
-        // Sandbox: okamžité schválení bez backendu
+        console.log("Schvaluji platbu:", paymentId);
         Pi.approvePayment(paymentId);
       },
       onReadyForServerCompletion: async function (paymentId, txid) {
